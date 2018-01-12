@@ -2,7 +2,7 @@
 
 ## What is Emblem20? ##
 
-Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios' Fire Emblem Tabletop system](reddit.com/user/xeohelios), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! At the moment, Emblem20 hasn't actually been submitted to the Roll20 scripts/sheets repository, since there's some things I still would like to work on before that.
+Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios' Fire Emblem Tabletop system](https://reddit.com/user/xeohelios), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! At the moment, Emblem20 hasn't actually been submitted to the Roll20 scripts/sheets repository, since there's some things I still would like to work on before that.
 
 ## What Fire Emblem era/system does Emblem20 use? ##
 
