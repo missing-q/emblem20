@@ -12,7 +12,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Different promotional items for each class
 - Light tomes deal little damage with a wide range, and dark tomes gain stacking bonuses when being used against another tome-user (not implemented yet).
 - Firearms don't use strength in their calculations, instead running off of pure Might. They also don't disappear when they run out of uses, but stay as (unusable) items. (Not implemented yet)
--Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle.
+- Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle.
 
 ## To Do ##
 
