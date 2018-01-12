@@ -1,4 +1,4 @@
-### Some frequently asked questions:
+### Some frequently asked questions: ###
 
 ## What is Emblem20? ##
 
