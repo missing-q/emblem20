@@ -48,6 +48,6 @@ Well, right now, the best way to use it is copy-paste the code into your own gam
 
 For convenience' sake, check the box that says "Show as token action". Make sure to select the token you're using before taking any actions.
 
-**Important: The macros and their linked scripts will *not work properly* on a token if it's not linked to a character in the Journal.**
+**The macros and their linked scripts will *not work properly* on a token if it's not linked to a character in the Journal.**
 
 Have fun!
