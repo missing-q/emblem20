@@ -47,7 +47,5 @@ Well, right now, the best way to use it is copy-paste the code into your own gam
 `!staff @{selected|token_id} @{target|token_id}`
 
 For convenience' sake, check the box that says "Show as token action". Make sure to select the token you're using before taking any actions.
-
-Remember that the macros will *not work* on a token if it's not linked to a character in the Journal.
-
+**Important: The macros and their linked scripts will *not work properly* on a token if it's not linked to a character in the Journal.**
 Have fun!
