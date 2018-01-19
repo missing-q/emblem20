@@ -23,6 +23,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Make an easy way to do terrain bonuses and other out-of-battle factors that influence hit/crit/avo. Maybe a macro?
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
+- Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 
 ## How can I use this now? ##
 
