@@ -11,20 +11,19 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Different healing and status staves
 - Different promotional items for each class
 - Light tomes deal little damage with a wide range, and dark tomes gain stacking bonuses when being used against another tome-user (not implemented yet).
-- Firearms don't use strength in their calculations, instead running off of pure Might. They also don't disappear when they run out of uses, but stay as (unusable) items. (Not implemented yet)
+- Firearms don't use strength in their calculations, instead running off of pure Might, and are counted as a separate damage type. 
 - Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle. 
+- Broken weapons have "broken" appended to their names when they run out of uses, and their rank is set UU (unusable)! This allows for them to be repaired at the GM's discretion (or alternatively, deleted).
 
 ## To Do ##
 
-- Append "broken" to the weapon's name when it runs out of uses, and set its rank to UU (unusable). Exception: Firearms should have "empty" appended to them.
 - Implement a fully-fledged skills system that also allows for personal skills, and skill triggers implemented into the battle system.
 - Implement the different effects of different magic types
-- Implement different damage calculations for Firearms- perhaps a separate damage type?
 - Make an easy way to do terrain bonuses and other out-of-battle factors that influence hit/crit/avo. Maybe a macro?
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
-- Not a priority right now, but eventually style the battle messages to make them more visually appealing
+- Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
 
 ## How can I use this now? ##
 

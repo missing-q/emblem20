@@ -50,9 +50,9 @@ on('chat:message', function(msg) {
         }
         var attacker = getObj('character', selectedToken.get('represents'));
         var defender = getObj('character', targetToken.get('represents'));
-        let Chatstr = '/me attacks ' + targetToken.get('name') + '! \n';
         let AName = attacker.get('name');
         let DName = defender.get('name');
+        let Chatstr = AName + ' attacks ' + DName + '!\n';
 
         //Grab basic stats
         let CurrHPA = findObjs({ characterid: attacker.id, name: "HP_current"})[0];
@@ -172,7 +172,7 @@ on('chat:message', function(msg) {
         let StoneUB = getAttrByName(defender.id, 'StoneU');
         let StaffUB = getAttrByName(defender.id, 'StaffU');
 
-        const PhysWepTypes = ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Stones/Other"];
+        const PhysWepTypes = ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Stones/Other"];
         const MWepTypes = ["Anima Magic","Light Magic","Dark Magic"];
         const WepTypes = ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Anima Magic","Light Magic","Dark Magic","Stones/Other","Staves/Rods"];
         const MagWeps = ["Levin Sword","Bolt Naginata","Bolt Axe","Shining Bow","Flame Shuriken"];
@@ -193,7 +193,7 @@ on('chat:message', function(msg) {
         //Weapon Rank threshold values
         let WRankA_num;
         let WRankB_num;
-        const LRanks = [{num: 0, rank: "E"},{num: 30, rank: "D"},{num: 70, rank: "C"},{num: 120, rank: "B"},{num: 180, rank: "A"},{num: 250, rank: "S"}]
+        const LRanks = [{num: 0, rank: "E"},{num: 30, rank: "D"},{num: 70, rank: "C"},{num: 120, rank: "B"},{num: 180, rank: "A"},{num: 250, rank: "S"},{num: 999, rank: "UU"}]
         //check for which rank
         for (var h in LRanks){
             log(LRanks[h])
@@ -238,6 +238,10 @@ on('chat:message', function(msg) {
         } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
             DmgtypeA = "Magical";
             DmgA = (MagA + MtA) - ResB;
+        }
+        else if (WTypeA == "Firearm/Taneg.") {
+            DmgtypeA = "Firearm";
+            DmgA = MtA - DefB;
         } else {
             DmgtypeA = "Healing";
             DmgA = 0;
@@ -256,6 +260,9 @@ on('chat:message', function(msg) {
         } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
             DmgtypeB = "Magical";
             DmgB = (MagB + MtB) - ResA;
+        } else if (WTypeB == "Firearm/Taneg."){
+            DmgtypeB = "Firearm";
+            DmgB = MtB - DefA;
         } else {
             DmgtypeB = "Healing";
             DmgB = 0; //Set damage to 0 so you don't accidentally heal the enemy;
@@ -324,11 +331,14 @@ on('chat:message', function(msg) {
         let BYCoord = targetToken.get("top");
         let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
         log(diff/70 + " tiles away!")
+        let css = {
+            attack: 'style = "color: #353535"'
+        }
         if (CanAttackA == true) {
             if (((Range1A) <= (diff/70)) && ((diff/70) <= (Range2A))){
                 Chatstr += AName+ "'s attack is in range! \n";
                 if (randomInteger(100) < (HitA - AvoB)){
-                    Chatstr += "<div color = green>"+AName+ "'s attack hits! \n </div>";
+                    Chatstr += AName + "'s attack hits! \n";
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
@@ -395,7 +405,7 @@ on('chat:message', function(msg) {
             Chatstr += "\n"+ DName +" cannot attack!"
         }
 
-        //Attacker doubles; I don't think I should need to check for doubleattacking since it's checked within the battle calc
+        //Attacker doubles; I don't think I should need to do usability checking for doubleattacking since it's checked within the battle calc
         if (DoubleA === true){
             Chatstr += "\n"+ AName+ " doubleattacks! \n";
             if (randomInteger(100) < (HitA - AvoB)){
@@ -506,8 +516,8 @@ on('chat:message', function(msg) {
             }
         }
 
-        sendChat(who,Chatstr);
-        log(Chatstr);
+        sendChat(who,'<div ' + css.attack + '>'+ Chatstr +'</div>');
+        log('<div ' + css.attack + '>'+ Chatstr +'</div>');
         if (IsPromoA == true){
             InLvA += 20
         }
@@ -558,11 +568,11 @@ on('chat:message', function(msg) {
                 gi = growthslist[i]
                 log(gi)
                 if (randomInteger(100) < gi){
-                    statslist[i].setWithWorkers({current: sprefix[i] + 1})
+                    statslist[i].setWithWorker({current: sprefix[i] + 1})
                     if (gi > 100){
                         if (randomInteger(100) < gi){
                             Lvstr += "\n + 2 to "+ slist[i] + "!"
-                            statslist[i].setWithWorkers({current: sprefix[i] + 2})
+                            statslist[i].setWithWorker({current: sprefix[i] + 2})
                         } else{
                             Lvstr += "\n + 1 to "+ slist[i] + "!"
                         }

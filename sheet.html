@@ -125,7 +125,7 @@
             </select>
         </label>
         <label> Level:
-            <input type = "number" name = "attr_Level" min = "1"  max = "40" value = "0"/>
+            <input type = "number" name = "attr_Level" min = "1"  max = "40" value = "1"/>
         </label>
         <label> EXP:
             <span name="attr_EXP">0</span>
@@ -674,10 +674,11 @@
                         <option>B</option>
                         <option>A</option>
                         <option>S</option>
+                        <option>UU</option>
                     </select>
                 </td>
                 <td><input type = "number" name = "attr_Wt" value = "0"/></td>
-                <td><input type = "number" name = "attr_Uses" value = "0" min = "0"/></td>
+                <td><input type = "number" name = "attr_Uses" value = "1" min = "0"/></td>
             </tr>
         </table>
         <table>
@@ -1934,7 +1935,7 @@ on("change:Species change:Class", function(eventInfo) {
 
 //Initialize values for API, because ded
 on("sheet:opened", function(){
-    getAttrs(["EXP","SwordEXP","LanceEXP","AxeEXP","BowEXP","DaggerEXP","GunEXP","AnimaEXP","DarkEXP","LightEXP","StoneEXP","StaffEXP","Level","HP_i","Str_i","Mag_i","Skl_i","Spd_i","Lck_i","Def_i","Res_i","Mov_i","HP_bd","Str_bd","Mag_bd","Skl_bd","Spd_bd","Lck_bd","Def_bd","Res_bd","Mov_bd","item_uses0","item_uses1","item_uses2"], function(v){
+    getAttrs(["EXP","SwordEXP","LanceEXP","AxeEXP","BowEXP","DaggerEXP","GunEXP","AnimaEXP","DarkEXP","LightEXP","StoneEXP","StaffEXP","Level","HP_i","Str_i","Mag_i","Skl_i","Spd_i","Lck_i","Def_i","Res_i","Mov_i","HP_bd","Str_bd","Mag_bd","Skl_bd","Spd_bd","Lck_bd","Def_bd","Res_bd","Mov_bd","item_uses0","item_uses1","item_uses2","Swordrank","Lancerank","Axerank","Bowrank","Daggerrank","Gunrank","Animarank","Lightrank","Darkrank","Staffrank","Stonerank"], function(v){
         setAttrs({
             EXP: v.EXP,
             SwordEXP: v.SwordEXP,
@@ -1948,6 +1949,17 @@ on("sheet:opened", function(){
             LightEXP: v.LightEXP,
             StoneEXP: v.StoneEXP,
             StaffEXP: v.StaffEXP,
+            Swordrank: v.Swordrank,
+            Lancerank: v.Lancerank,
+            Axerank: v.Axerank,
+            Bowrank: v.Bowrank,
+            Daggerrank: v.Daggerrank,
+            Gunrank: v.Gunrank,
+            Animarank: v.Animarank,
+            Darkrank: v.Darkrank,
+            Lightrank: v.Lightrank,
+            Stonerank: v.Stonerank,
+            Staffrank: v.Staffrank,
             Level: v.Level,
             HP_i: v.HP_i,
             Str_i: v.Str_i,
@@ -1973,6 +1985,22 @@ on("sheet:opened", function(){
         });
         console.log("Initializing values...")
     });
+});
+//Broken item script! Because of the way fists are handled, they should never be able to reach zero, so I think it'll be ok
+on("change:repeating_weapons:Uses", function(eventInfo) {
+    console.log(eventInfo.newValue);
+	setObj = {};//create an empty object
+    if (eventInfo.newValue === "0"){
+        console.log("Broken")
+        let RID = eventInfo.sourceAttribute.slice(18,38) //This gets the repeating row ID of the changed attribute
+        getAttrs(["repeating_weapons_"+RID+"_WName"], function(v){
+            setObj["repeating_weapons_"+RID+"_WRank"]="UU";
+            setObj["repeating_weapons_"+RID+"_WName"]="Broken " + v["repeating_weapons_"+RID+"_WName"];
+            log(v)
+            setAttrs(setObj);
+            log(setObj)
+        });
+    }
 });
 </script>
 
