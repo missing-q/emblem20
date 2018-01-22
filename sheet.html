@@ -1987,18 +1987,15 @@ on("sheet:opened", function(){
     });
 });
 //Broken item script! Because of the way fists are handled, they should never be able to reach zero, so I think it'll be ok
-on("change:repeating_weapons:Uses", function(eventInfo) {
+on("change:repeating_weapons:uses", function(eventInfo) {
     console.log(eventInfo.newValue);
-	setObj = {};//create an empty object
     if (eventInfo.newValue === "0"){
-        console.log("Broken")
-        let RID = eventInfo.sourceAttribute.slice(18,38) //This gets the repeating row ID of the changed attribute
-        getAttrs(["repeating_weapons_"+RID+"_WName"], function(v){
-            setObj["repeating_weapons_"+RID+"_WRank"]="UU";
-            setObj["repeating_weapons_"+RID+"_WName"]="Broken " + v["repeating_weapons_"+RID+"_WName"];
-            log(v)
-            setAttrs(setObj);
-            log(setObj)
+        console.log("Broken");
+        getAttrs(["repeating_weapons_WName"], function(v){
+            setAttrs({
+                "repeating_weapons_WRank": "UU",
+                "repeating_weapons_WName": "Broken " + v["repeating_weapons_WName"]
+            });
         });
     }
 });
