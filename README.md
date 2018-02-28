@@ -24,7 +24,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 - Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
-
+- The skills system is coming along quite nicely! I'm going to start adding premade skills to the (wiki)[https://github.com/missing-q/emblem20/wiki], which will where to find them in the future.
 ## How can I use this now? ##
 
 Well, right now, the best way to use it is copy-paste the code into your own game! Be warned, this requires a premium or a pro account.
