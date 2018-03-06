@@ -14,17 +14,17 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Firearms don't use strength in their calculations, instead running off of pure Might, and are counted as a separate damage type. 
 - Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle. 
 - Broken weapons have "broken" appended to their names when they run out of uses, and their rank is set UU (unusable)! This allows for them to be repaired at the GM's discretion (or alternatively, deleted).
+- A fully-fledged, dynamic skills system allowing for the creation of custom skills! See the [wiki](https://github.com/missing-q/emblem20/wiki) for more details!
 
 ## To Do ##
 
-- Implement a fully-fledged skills system that also allows for personal skills, and skill triggers implemented into the battle system.
 - Implement the different effects of different magic types
 - Make an easy way to do terrain bonuses and other out-of-battle factors that influence hit/crit/avo. Maybe a macro?
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 - Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
-- The skills system is coming along quite nicely! I'm going to start adding premade skills to the [wiki](https://github.com/missing-q/emblem20/wiki), which will where to find them in the future.
+
 ## How can I use this now? ##
 
 Well, right now, the best way to use it is copy-paste the code into your own game! Be warned, this requires a premium or a pro account.
