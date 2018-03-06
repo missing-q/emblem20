@@ -828,7 +828,7 @@ on('chat:message', function(msg) {
                 }
             }
 
-            if (obj.rng != "any") {
+            if (obj.rng != "none") {
                 if (randomInteger(100) < (rng * obj.rngmod)) {
                     skillMain();
                 } else {
