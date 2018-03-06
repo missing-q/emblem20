@@ -2,7 +2,7 @@
 
 ## What is Emblem20? ##
 
-Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios' Fire Emblem Tabletop system](https://reddit.com/user/xeohelios), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! At the moment, Emblem20 hasn't actually been submitted to the Roll20 scripts/sheets repository, since there's some things I still would like to work on before that.
+Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios'](https://reddit.com/user/xeohelios) [Fire Emblem Tabletop system](https://www.dropbox.com/sh/fvib0sh0o4fqt8d/AACJ66fUDtxL5atM5-ZcE8Ypa?dl=0), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! At the moment, Emblem20 hasn't actually been submitted to the Roll20 API scripts repository, since there's some things I still would like to work on before that. However! As of writing this, the character sheet portion *is* live on the [Roll20 Character Sheets](https://github.com/Roll20/roll20-character-sheets) repository, and can be added to a game on the main site.
 
 ## What Fire Emblem era/system does Emblem20 use? ##
 
@@ -24,7 +24,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 - Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
-
+- The skills system is coming along quite nicely! I'm going to start adding premade skills to the [wiki](https://github.com/missing-q/emblem20/wiki), which will where to find them in the future.
 ## How can I use this now? ##
 
 Well, right now, the best way to use it is copy-paste the code into your own game! Be warned, this requires a premium or a pro account.
