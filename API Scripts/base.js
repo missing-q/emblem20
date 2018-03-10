@@ -436,8 +436,12 @@ on('chat:message', function(msg) {
         let DmgtypeE;
         let PhysmagU;
         let PhysmagE;
+        let PhysmaginvU;
+        let PhysmaginvE;
         let StattargetU;
         let StattargetE;
+        let Dmg_U;
+        let Dmg_E;
 
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
@@ -449,161 +453,119 @@ on('chat:message', function(msg) {
             if ((userid == attacker.id) && (obj.u_wepreq.indexOf(WTypeA) != -1) && (obj.e_wepreq.indexOf(WTypeB) != -1)) {
                 //obj.u_wepreq is a list of weapon types (to account for Aegis/Pavise & other similar skills)
                 //just change "any" to a list of all weapon types, I guess
-                //stat definitions
                 log("Skill user is attacker");
                 user = "attacker";
                 RNGSklU = SklA;
                 RNGLuckU = LckA;
                 CurrHPU = CurrHPA;
                 CurrHPE = CurrHPB;
-                HPU = findObjs({
-                    characterid: attacker.id,
-                    name: "HP_bd"
-                })[0];
-                HPE = findObjs({
-                    characterid: defender.id,
-                    name: "HP_bd"
-                })[0];
-                StrU = findObjs({
-                    characterid: attacker.id,
-                    name: "Str_bd"
-                })[0];
-                StrE = findObjs({
-                    characterid: defender.id,
-                    name: "Str_bd"
-                })[0];
-                MagU = findObjs({
-                    characterid: attacker.id,
-                    name: "Mag_bd"
-                })[0];
-                MagE = findObjs({
-                    characterid: defender.id,
-                    name: "Mag_bd"
-                })[0];
-                SklU = findObjs({
-                    characterid: attacker.id,
-                    name: "Skl_bd"
-                })[0];
-                SklE = findObjs({
-                    characterid: defender.id,
-                    name: "Skl_bd"
-                })[0];
-                SpdU = findObjs({
-                    characterid: attacker.id,
-                    name: "Spd_bd"
-                })[0];
-                SpdE = findObjs({
-                    characterid: defender.id,
-                    name: "Spd_bd"
-                })[0];
-                LckU = findObjs({
-                    characterid: attacker.id,
-                    name: "Lck_bd"
-                })[0];
-                LckE = findObjs({
-                    characterid: defender.id,
-                    name: "Lck_bd"
-                })[0];
-                DefU = findObjs({
-                    characterid: attacker.id,
-                    name: "Def_bd"
-                })[0];
-                DefE = findObjs({
-                    characterid: defender.id,
-                    name: "Def_bd"
-                })[0];
-                ResU = findObjs({
-                    characterid: attacker.id,
-                    name: "Res_bd"
-                })[0];
-                ResE = findObjs({
-                    characterid: attacker.id,
-                    name: "Res_bd"
-                })[0];
                 DmgtypeU = DmgtypeA;
                 DmgtypeE = DmgtypeB;
                 Usertoken = selectedToken;
+                Dmg_U = DmgA; //just for expressions'sake
+                Dmg_E = DmgB;
 
             } else if ((userid == defender.id) && (obj.u_wepreq.indexOf(WTypeB) != -1) && (obj.e_wepreq.indexOf(WTypeA) != -1)) {
-                log("User is defender");
                 user = "defender";
                 log("Skill user is defender")
                 RNGSklU = SklB;
                 RNGLuckU = LckB;
                 CurrHPU = CurrHPB;
                 CurrHPE = CurrHPA;
-                HPU = findObjs({
-                    characterid: defender.id,
-                    name: "HP_bd"
-                })[0];
-                HPE = findObjs({
-                    characterid: attacker.id,
-                    name: "HP_bd"
-                })[0];
-                StrU = findObjs({
-                    characterid: defender.id,
-                    name: "Str_bd"
-                })[0];
-                StrE = findObjs({
-                    characterid: attacker.id,
-                    name: "Str_bd"
-                })[0];
-                MagU = findObjs({
-                    characterid: defender.id,
-                    name: "Mag_bd"
-                })[0];
-                MagE = findObjs({
-                    characterid: attacker.id,
-                    name: "Mag_bd"
-                })[0];
-                SklU = findObjs({
-                    characterid: defender.id,
-                    name: "Skl_bd"
-                })[0];
-                SklE = findObjs({
-                    characterid: attacker.id,
-                    name: "Skl_bd"
-                })[0];
-                SpdU = findObjs({
-                    characterid: defender.id,
-                    name: "Spd_bd"
-                })[0];
-                SpdE = findObjs({
-                    characterid: attacker.id,
-                    name: "Spd_bd"
-                })[0];
-                LckU = findObjs({
-                    characterid: defender.id,
-                    name: "Lck_bd"
-                })[0];
-                LckE = findObjs({
-                    characterid: attacker.id,
-                    name: "Lck_bd"
-                })[0];
-                DefU = findObjs({
-                    characterid: defender.id,
-                    name: "Def_bd"
-                })[0];
-                DefE = findObjs({
-                    characterid: attacker.id,
-                    name: "Def_bd"
-                })[0];
-                ResU = findObjs({
-                    characterid: defender.id,
-                    name: "Res_bd"
-                })[0];
-                ResE = findObjs({
-                    characterid: attacker.id,
-                    name: "Res_bd"
-                })[0];
                 DmgtypeU = DmgtypeB;
                 DmgtypeE = DmgtypeA;
                 Usertoken = targetToken;
+                Dmg_U = DmgB; //just for expressions'sake
+                Dmg_E = DmgA;
 
             } else {
                 log("You probably don't have the right weapons")
                 return;
             }
+            log("DamageU is" + Dmg_U);
+            //stat definitions
+            HPU = findObjs({
+                characterid: userid,
+                name: "HP_bd"
+            })[0];
+            HPE = findObjs({
+                characterid: targetid,
+                name: "HP_bd"
+            })[0];
+            StrU = findObjs({
+                characterid: userid,
+                name: "Str_bd"
+            })[0];
+            StrE = findObjs({
+                characterid: targetid,
+                name: "Str_bd"
+            })[0];
+            MagU = findObjs({
+                characterid: userid,
+                name: "Mag_bd"
+            })[0];
+            MagE = findObjs({
+                characterid: targetid,
+                name: "Mag_bd"
+            })[0];
+            SklU = findObjs({
+                characterid: userid,
+                name: "Skl_bd"
+            })[0];
+            SklE = findObjs({
+                characterid: targetid,
+                name: "Skl_bd"
+            })[0];
+            SpdU = findObjs({
+                characterid: userid,
+                name: "Spd_bd"
+            })[0];
+            SpdE = findObjs({
+                characterid: targetid,
+                name: "Spd_bd"
+            })[0];
+            LckU = findObjs({
+                characterid: userid,
+                name: "Lck_bd"
+            })[0];
+            LckE = findObjs({
+                characterid: targetid,
+                name: "Lck_bd"
+            })[0];
+            DefU = findObjs({
+                characterid: userid,
+                name: "Def_bd"
+            })[0];
+            DefE = findObjs({
+                characterid: targetid,
+                name: "Def_bd"
+            })[0];
+            ResU = findObjs({
+                characterid: userid,
+                name: "Res_bd"
+            })[0];
+            ResE = findObjs({
+                characterid: targetid,
+                name: "Res_bd"
+            })[0];
+
+            //nice stat-variables for use in expressions and such
+            let HP_StatU = getAttrByName(userid, 'hp_total');
+            let HP_StatE = getAttrByName(targetid, 'hp_total');
+            let Str_StatU = getAttrByName(userid, 'str_total');
+            let Str_StatE = getAttrByName(targetid, 'str_total');
+            let Mag_StatU = getAttrByName(userid, 'mag_total');
+            let Mag_StatE = getAttrByName(targetid, 'mag_total');
+            let Skl_StatU = getAttrByName(userid, 'skl_total');
+            let Skl_StatE = getAttrByName(targetid, 'skl_total');
+            let Spd_StatU = getAttrByName(userid, 'spd_total');
+            let Spd_StatE = getAttrByName(targetid, 'spd_total');
+            let Lck_StatU = getAttrByName(userid, 'lck_total');
+            let Lck_StatE = getAttrByName(targetid, 'lck_total');
+            let Def_StatU = getAttrByName(userid, 'def_total');
+            let Def_StatE = getAttrByName(targetid, 'def_total');
+            let Res_StatU = getAttrByName(userid, 'res_total');
+            let Res_StatE = getAttrByName(targetid, 'res_total');
 
             let rng;
             if (obj.rng == "Skill") {
@@ -619,20 +581,25 @@ on('chat:message', function(msg) {
                 //PhysmagE
                 if (DmgtypeE == "Physical" || DmgtypeE == "Firearm") {
                     PhysmagE = getAttrByName(targetid, "str_total");
+                    PhysmaginvE = getAttrByName(targetid, "mag_total"); //inv for stuff like Ignis
                     log(targetid)
                 } else {
                     PhysmagE = getAttrByName(targetid, "mag_total");
+                    PhysmaginvE = getAttrByName(targetid, "str_total");
                 } //I would add a def/res parameter, but I'm just going to be lazy and use the defense AND resistance definition for Luna.
                 log("PhysmagE is " + PhysmagE)
 
                 //PhysmagU
                 if (DmgtypeU == "Physical" || DmgtypeU == "Firearm") {
                     PhysmagU = getAttrByName(userid, "str_total");
+                    PhysmaginvU = getAttrByName(userid, "mag_total");
                     log(targetid)
                 } else {
                     PhysmagU = getAttrByName(userid, "mag_total");
+                    PhysmaginvU = getAttrByName(userid, "str_total");
                 }
                 log("PhysmagU is " + PhysmagU)
+
 
                 /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and
                 usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
@@ -640,8 +607,9 @@ on('chat:message', function(msg) {
                 let DamagemodU = eval(obj.u_damagemod);
                 log("Damage mod is " + DamagemodU)
                 let DamagemodE = eval(obj.e_damagemod);
-                let HealmodU = eval(obj.u_healfactor);
-                let HealmodE = eval(obj.e_healfactor);
+                let HealmodU = parseInt(eval(obj.u_healfactor));
+                let HealmodE = parseInt(eval(obj.e_healfactor));
+                log("HealmodU is" + HealmodU)
 
                 let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
 
@@ -686,6 +654,8 @@ on('chat:message', function(msg) {
                     AvoB += obj.e_avomod;
                     DdgA += obj.u_ddgmod;
                     DdgB += obj.e_ddgmod;
+                    HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
+                    HPB = parseInt(HPB) + HealmodE;
                 } else {
                     DmgB += DamagemodU;
                     DmgA += DamagemodE;
@@ -697,7 +667,10 @@ on('chat:message', function(msg) {
                     AvoA += obj.e_avomod;
                     DdgB += obj.u_ddgmod;
                     DdgA += obj.e_ddgmod;
+                    HPB = parseInt(HPB) + HealmodU;
+                    HPA = parseInt(HPA) + HealmodE;
                 }
+                log(HPA)
                 if (obj.radius != 0){
                     //tortured screaming
                     let tokenInRadius = filterObjs(function(token) {
@@ -717,16 +690,24 @@ on('chat:message', function(msg) {
                         let LckC = findObjs({ characterid: char, name: "Lck_bd"})[0];
                         let DefC = findObjs({ characterid: char, name: "Def_bd"})[0];
                         let ResC = findObjs({ characterid: char, name: "Res_bd"})[0];
+                        let HitC = findObjs({ characterid: char, name: "Hitmod"})[0];
+                        let CritC = findObjs({ characterid: char, name: "Critmod"})[0];
+                        let AvoC = findObjs({ characterid: char, name: "Avomod"})[0];
+                        let DdgC = findObjs({ characterid: char, name: "Ddgmod"})[0];
 
                         //numerical stats
                         let HPcurrStat = getAttrByName(char, 'HP_current');
-                        let StrStat = getAttrByName(char, 'Str_bd');
-                        let MagStat = getAttrByName(char, 'Mag_bd');
-                        let SklStat = getAttrByName(char, 'Skl_bd');
-                        let SpdStat = getAttrByName(char, 'Spd_bd');
-                        let LckStat = getAttrByName(char, 'Lck_bd');
-                        let DefStat = getAttrByName(char, 'Def_bd');
-                        let ResStat = getAttrByName(char, 'Res_bd');
+                        let StrStat = getAttrByName(char, 'Str_total');
+                        let MagStat = getAttrByName(char, 'Mag_total');
+                        let SklStat = getAttrByName(char, 'Skl_total');
+                        let SpdStat = getAttrByName(char, 'Spd_total');
+                        let LckStat = getAttrByName(char, 'Lck_total');
+                        let DefStat = getAttrByName(char, 'Def_total');
+                        let ResStat = getAttrByName(char, 'Res_total');
+                        let HitStat = getAttrByName(char, 'Hit');
+                        let CritStat = getAttrByName(char, 'Crit');
+                        let AvoStat = getAttrByName(char, 'Avo');
+                        let DdgStat = getAttrByName(char, 'Ddg');
 
                         effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]))
