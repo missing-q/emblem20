@@ -18,7 +18,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 
 ## To Do ##
 - Add more skill parameters, features, etc. as dictated by missing skills in the [wiki.](https://github.com/missing-q/emblem20/wiki)
-- Implement the different effects of different magic typeshttps://github.com/missing-q/emblem20/wiki)
+- Implement the different effects of different magic types
 - Make an easy way to do terrain bonuses and other out-of-battle factors that influence hit/crit/avo. Maybe a macro?
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
