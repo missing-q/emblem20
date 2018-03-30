@@ -1,20 +1,18 @@
-//Manhattan Distance in tiles between two units
-function ManhDist(token1,token2) {
-    let AXCoord = token1.get("left");
-    let AYCoord = token1.get("top");
-    let BXCoord = token2.get("left");
-    let BYCoord = token2.get("top");
-    let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
-    return (diff/70)
-};
-//credit to Brian on the forums for this framework!
+//Command skills! :o
 on('chat:message', function(msg) {
     if (msg.type != 'api') return;
-    var parts = msg.content.split(' ');
+    var parts = msg.content.split(' '); //skill name should NOT have a space in it!
     var command = parts.shift().substring(1);
-
+    function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
+        let AXCoord = token1.get("left");
+        let AYCoord = token1.get("top");
+        let BXCoord = token2.get("left");
+        let BYCoord = token2.get("top");
+        let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
+        return (diff/70)
+    }
     // Don't run if it's any other command
-    if (command == 'staff') {
+    if (command == 'skill') {
         if (parts.length < 2) {
             sendChat('SYSTEM', 'You must provide a selected token id and a target token id.');
             return;
@@ -44,146 +42,67 @@ on('chat:message', function(msg) {
         } else {
             who = 'character|' + who.id;
         }
-        var staffer = getObj('character', selectedToken.get('represents'));
-        var target = getObj('character', targetToken.get('represents'));
-        let CurrHPA = findObjs({ characterid: staffer.id, name: "HP_current"})[0];
-        //Target stats for tasty statuses
-        let CurrHPB = findObjs({ characterid: target.id, name: "HP_current"})[0];
-        let MaxHPB = findObjs({ characterid: target.id, name: "HP_total"})[0];
-        let StrB = findObjs({ characterid: target.id, name: "Str_total"})[0];
-        let MagB = findObjs({ characterid: target.id, name: "Mag_total"})[0];
-        let SklB = findObjs({ characterid: target.id, name: "Skl_total"})[0];
-        let SpdB = findObjs({ characterid: target.id, name: "Spd_total"})[0];
-        let LckB = findObjs({ characterid: target.id, name: "Lck_total"})[0];
-        let DefB = findObjs({ characterid: target.id, name: "Def_total"})[0];
-        let ResB = findObjs({ characterid: target.id, name: "Res_total"})[0];
-        let MovB = findObjs({ characterid: target.id, name: "Mov_total"})[0];
+        //script!!
 
-        let HPbd = findObjs({ characterid: target.id, name: "HP_bd"})[0];
-        let Strbd = findObjs({ characterid: target.id, name: "Str_bd"})[0];
-        let Magbd = findObjs({ characterid: target.id, name: "Mag_bd"})[0];
-        let Sklbd = findObjs({ characterid: target.id, name: "Skl_bd"})[0];
-        let Spdbd = findObjs({ characterid: target.id, name: "Spd_bd"})[0];
-        let Lckbd = findObjs({ characterid: target.id, name: "Lck_bd"})[0];
-        let Defbd = findObjs({ characterid: target.id, name: "Def_bd"})[0];
-        let Resbd = findObjs({ characterid: target.id, name: "Res_bd"})[0];
-        let Movbd = findObjs({ characterid: target.id, name: "Mov_bd"})[0];
-        //Weapons and h/c/a
-        let HitA = getAttrByName(staffer.id, 'hit');
-        let AvoB = getAttrByName(target.id, 'avo');
-        let MagA = getAttrByName(staffer.id, 'mag_total');
-        let WNameA = getAttrByName(staffer.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WTypeA = getAttrByName(staffer.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let MtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Mt')) || 0;
-        let WtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Wt')) || 0;
-        let Range1A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range2A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range2')) || 1;
-        let fIDA = getAttrByName(staffer.id, 'fid')|| ""
-        let UsesA = findObjs({ characterid: staffer.id, name: "repeating_weapons_"+fIDA+"_Uses"},{ caseInsensitive: true })[0]; //assumes it exists, since that's a requirement for the thing to activate
-        let diff = ManhDist(selectedToken, targetToken);
+        var attacker = getObj('character', selectedToken.get('represents'));
+        var defender = getObj('character', targetToken.get('represents'));
 
-        chatstr = "/me uses " + WNameA + "!"
+        //grab all commands
+        let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
+        for (var i in SkillsA){
+            SkillsA[i] = SkillsA[i].get("action");
+            if (SkillsA[i] != ""){
+                SkillsA[i] = JSON.parse(SkillsA[i]);
+            }
+        }
+        let temp = []
+        SkillsA.forEach(function(entry, i) {
+            if (SkillsA[i].triggertime == "command"){
+                temp.push(SkillsA[i])
+            }
+        });
+        SkillsA = temp;
+        let namestr = "";
+        for (i in SkillsA){
+            namestr += "|" + SkillsA[i].name;
+        }
 
-        const Heal = {
-            name : "Heal",
-            type : "healing",
-            effect : 10 + (Math.round(MagA/3))
-        };
-        const Mend = {
-            name : "Mend",
-            type : "healing",
-            effect : 20 + (Math.round(MagA/3))
-        };
-        const Physic = {
-            name : "Physic",
-            type : "healing",
-            effect : 7 + (Math.round(MagA/3))
-        };
-        const Recover = {
-            name : "Recover",
-            type : "healing",
-            effect : 35 + (Math.round(MagA/3))
-        };
-        const Fortify = {
-            name : "Fortify",
-            type : "healing",
-            effect : 7 + (Math.round(MagA/3))
-        };
-        const Bloom_Festal = {
-            name : "Bloom Festal",
-            type : "healing",
-            effect : 7 + (Math.round(MagA/3))
-        };
-        const Sun_Festal = {
-            name : "Sun Festal",
-            type : "healing",
-            effect : 14 + (Math.round(MagA/3))
-        };
-        const Wane_Festal = {
-            name : "Wane Festal",
-            type : "healing",
-            effect : 2 + (Math.round(MagA/3))
-        };
-        const Moon_Festal = {
-            name : "Moon Festal",
-            type : "healing",
-            effect : 25 + (Math.round(MagA/3))
-        };
-        const Great_Festal = {
-            name : "Great Festal",
-            type : "healing",
-            effect : 2 + (Math.round(MagA/3))
-        };
-        const Freeze = {
-            name : "Freeze",
-            type : "status",
-            target: [Movbd],
-            effect : Number(MovB.get("current")) * -1,
-            status: {status_tread: true},
-            chatmsg: targetToken.get("name") + " is unable to move this turn!"
-        };
-        const Enfeeble = {
-            name : "Enfeeble",
-            type : "status",
-            target: [Strbd,Magbd,Sklbd,Spdbd,Lckbd,Defbd,Resbd],
-            effect : -4,
-            status: {"status_back-pain": 4},
-            chatmsg: targetToken.get("name") + " is enfeebled! -4 to every stat (decreases by 1 each turn)"
-        };
-        const Entrap = {
-            name : "Entrap",
-            type : "status",
-            target: [Movbd],
-            effect : 0,
-            status: {"status_grab": false},
-            chatmsg: targetToken.get("name") + " is moved next to the enemy!"
-        };
-        const Rescue = {
-            name : "Rescue",
-            type : "status",
-            target: [Movbd],
-            effect : 0,
-            status: {"status_grab": false},
-            chatmsg: targetToken.get("name") + " is rescued!"
-        };
-        const Silence = {
-            name : "Silence",
-            type : "status",
-            target: [Magbd],
-            effect : Number(MagB.get("current")) * -1,
-            status: {status_interdiction: true},
-            chatmsg: targetToken.get("name") + " cannot use magic for the next turn!"
-        };
-        const Hexing_Rod = {
-            name : "Hexing Rod",
-            type : "status",
-            target: [HPbd],
-            effect : Math.round(Number(MaxHPB.get("current")) * -0.5),
-            status: {"status_broken-heart": true},
-            chatmsg: targetToken.get("name") + "'s HP was halved!"
-        };
 
-        //Okay, Skills system time!!
+        //SkillsB doesn't exist because they're not selecting anything lol
+
+        sendChat("System","[Pick Ability](!&#"+"13;!co ?{Pick a skill"+namestr+"} " + selectedId + " " + targetId + ")");
+        //get second message
+
+    }
+    if (command == 'co'){
+        log("YE")
+        log(parts);
+        var skillName = parts[0];
+        var selectedId = parts[1];
+        var targetId = parts[2];
+
+        var selectedToken = getObj('graphic', selectedId);
+        var targetToken = getObj('graphic', targetId);
+        var attacker = getObj('character', selectedToken.get('represents'));
+        var defender = getObj('character', targetToken.get('represents'));
+
+        var who = getObj('character', selectedToken.get('represents'));
+        if (!who) {
+            who = selectedToken.get('name');
+        } else {
+            who = 'character|' + who.id;
+        }
+
+        let newSkill = findObjs({ characterid: attacker.id, type: "ability", name: skillName })[0];
+        log(newSkill)
+        if (newSkill == [] || newSkill == undefined){
+            sendChat("SYSTEM","Provided skill name does not exist! ")
+            return;
+        }
+        newSkill = newSkill.get("action")
+        let selectedSkill = JSON.parse(newSkill);
+        log(selectedSkill)
+        //Skills system time!!
         let user;
         let RNGSklU;
         let RNGLuckU;
@@ -223,37 +142,39 @@ on('chat:message', function(msg) {
         let PhysmaginvE;
         let StattargetU;
         let StattargetE;
-        let CurrEXP = findObjs({ characterid: staffer.id, name: "EXP"})[0];
-        let LvA = findObjs({ characterid: staffer.id, name: "Level"})[0];
+        let CurrEXP = findObjs({ characterid: attacker.id, name: "EXP"})[0];
+        let LvA = findObjs({ characterid: attacker.id, name: "Level"})[0];
         let InLvA = Number(LvA.get("current"));
-        let LvB = findObjs({ characterid: target.id, name: "Level"})[0];
+        let LvB = findObjs({ characterid: defender.id, name: "Level"})[0];
         let InLvB = Number(LvB.get("current"));
         let EXPA = Number(CurrEXP.get("current"));
-        let IsPromoA = getAttrByName(staffer.id, 'isPromo');
-        let IsPromoB = getAttrByName(target.id, 'isPromo');
+        let IsPromoA = getAttrByName(attacker.id, 'isPromo');
+        let IsPromoB = getAttrByName(defender.id, 'isPromo');
         let EXPAmod = (10 + ((Math.abs(InLvB-InLvA)*3)));
-        let HPA = Number(getAttrByName(staffer.id, 'hp_current'));
-        let HPB = Number(getAttrByName(target.id, 'hp_current'));
+        let HPA = Number(getAttrByName(attacker.id, 'hp_current'));
+        let HPB = Number(getAttrByName(defender.id, 'hp_current'));
+        let CurrHPA = findObjs({ characterid: attacker.id, name: "HP_current"})[0];
+        let CurrHPB = findObjs({ characterid: defender.id, name: "HP_current"})[0];
 
         function Skill(userid, targetid, obj, triggertime) { //haha END ME
             if (typeof obj != "object") {
                 log("obj is not an object :(")
                 return;
             }
-            if (obj.triggertime != "staff"){
+            if (obj.triggertime != "command"){
                 return;
             }
-            //no whotriggered checking because it'll always be the staffer
+            //no whotriggered checking because it'll always be the attacker
             log("Okay, first barrier passed")
-            user = "staffer";
-            RNGSklU = Number(getAttrByName(staffer.id, 'skl_total'));
-            RNGLckU = Number(getAttrByName(staffer.id, 'lck_total'));
+            user = "attacker";
+            RNGSklU = Number(getAttrByName(attacker.id, 'skl_total'));
+            RNGLckU = Number(getAttrByName(attacker.id, 'lck_total'));
             CurrHPU = findObjs({
-                characterid: staffer.id,
+                characterid: attacker.id,
                 name: "HP_current"
             })[0];
             CurrHPE = findObjs({
-                characterid: target.id,
+                characterid: defender.id,
                 name: "HP_current"
             })[0];
             DmgtypeU = ""
@@ -402,7 +323,7 @@ on('chat:message', function(msg) {
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
-                HPVal = parseInt(HPVal) + HealmodE;
+                HPB = parseInt(HPB) + HealmodE;
                 EXPAmod *= obj.expmod_u;
                 log(HPA)
 
@@ -489,20 +410,23 @@ on('chat:message', function(msg) {
                         });
                         log(effect[0].get("current"))
 
-                        if ((effect[0] == HPcurrC) && (char == staffer.id)) {
+                        if ((effect[0] == HPcurrC) && (char == attacker.id)) {
                             HPA += parseInt(effect[1])
                         }
 
-                        if ((effect[0] == HPcurrC) && (char == target.id)) {
-                            HPVal += parseInt(effect[1])
+                        if ((effect[0] == HPcurrC) && (char == defender.id)) {
+                            HPB += parseInt(effect[1])
                         }
                     }
+
+                    CurrHPA.setWithWorker({
+                        current: HPA
+                    });
+                    CurrHPB.setWithWorker({
+                        current: HPB
+                    });
+
                 }
-
-                CurrHPA.setWithWorker({
-                    current: HPA
-                });
-
                 //recursionnn
                 if (obj.children_skills != []) {
                     for (var y in obj.children_skills) {
@@ -511,11 +435,13 @@ on('chat:message', function(msg) {
                     }
                 }
 
+                let Chatstr;
                 if (obj.custom_string != "") {
-                    chatstr += '\n<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
+                    Chatstr = '<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
                 } else {
-                    chatstr += '\n<b style = "color: #4055df;">' + obj.name + " activated!</b>\n"
+                    Chatstr = '<b style = "color: #4055df;">'+attacker.get("name") + " used " + obj.name + "!</b>\n"
                 }
+                sendChat(who, Chatstr);
             }
 
             if (obj.rng != "none") {
@@ -532,66 +458,67 @@ on('chat:message', function(msg) {
             }
         }
 
-        let SkillsA = findObjs({ characterid: staffer.id, type: "ability"});
-        for (var i in SkillsA){
-            SkillsA[i] = SkillsA[i].get("action");
-            if (SkillsA[i] != ""){
-                SkillsA[i] = JSON.parse(SkillsA[i]);
-            }
-        }
-        let temp = []
-        SkillsA.forEach(function(entry, i) {
-            if (SkillsA[i].triggertime == "staff"){
-                temp.push(SkillsA[i])
-            }
-        });
-        SkillsA = temp;
-        log(SkillsA);
+        Skill(attacker.id, defender.id, selectedSkill, "command")
 
-        const staveslist = [Heal,Mend,Physic,Recover,Fortify,Bloom_Festal,Sun_Festal,Wane_Festal,Moon_Festal,Great_Festal,Freeze,Enfeeble,Entrap,Rescue,Silence,Hexing_Rod];
-        //Script stuff here
-        if (WTypeA != "Staves/Rods"){
-            chatstr += "\n Weapon is not a staff!"
-        } else {
-            for (var i in staveslist){
-                if (staveslist[i].name === WNameA){
-                    j = staveslist[i];
-                    //check for range
-                    if (((Range1A) <= (diff)) && ((diff) <= (Range2A))){
-                        if (j.type === "healing"){
-                            //Set with workers in respect to total caps
-                            HPVal = j.effect
-                            for (var z in SkillsA){
-                                Skill(staffer, target, SkillsA[z], "staff")
-                            }
-                            CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal})
-                            chatstr += "\n" + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!"
-                            UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1})
-                        }
-                        if (j.type === "status"){
-                            //Check for RNG
-                            if (randomInteger(100) < (HitA - AvoB)){
-                                for (var a in j.target){
-                                    log(j.effect);
-                                    log(j.target[a])
-                                    j.target[a].setWithWorker("current",j.effect)
-                                }
-                                log(j.status);
-                                targetToken.set(j.status);
-                                UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1})
-                                chatstr += "\n"+ j.chatmsg
-                            }
-                            else {
-                                chatstr += "\n Staff misses!"
-                            }
+        //EXPPPPP
+        EXPA += EXPAmod
+        CurrEXP.set("current",EXPA);
+        if (CurrEXP.get("current") >= 100){
+            CurrEXP.set("current",CurrEXP.get("current")-100);
+            //Get growths
+            LvA.set("current", Number(LvA.get("current")) + 1);
+            let Lvstr = "/me leveled up!";
+            let HPG = Number(getAttrByName(attacker.id, 'hp_gtotal'));
+            let StrG = Number(getAttrByName(attacker.id, 'str_gtotal'));
+            let MagG = Number(getAttrByName(attacker.id, 'mag_gtotal'));
+            let SklG = Number(getAttrByName(attacker.id, 'skl_gtotal'));
+            let SpdG = Number(getAttrByName(attacker.id, 'spd_gtotal'));
+            let LckG = Number(getAttrByName(attacker.id, 'lck_gtotal'));
+            let DefG = Number(getAttrByName(attacker.id, 'def_gtotal'));
+            let ResG = Number(getAttrByName(attacker.id, 'res_gtotal'));
+            let growthslist = [HPG,StrG,MagG,SklG,SpdG,LckG,DefG,ResG];
+
+            let HPi = Number(getAttrByName(attacker.id, 'hp_i'));
+            let Stri = Number(getAttrByName(attacker.id, 'str_i'));
+            let Magi = Number(getAttrByName(attacker.id, 'mag_i'));
+            let Skli = Number(getAttrByName(attacker.id, 'skl_i'));
+            let Spdi = Number(getAttrByName(attacker.id, 'spd_i'));
+            let Lcki = Number(getAttrByName(attacker.id, 'lck_i'));
+            let Defi = Number(getAttrByName(attacker.id, 'def_i'));
+            let Resi = Number(getAttrByName(attacker.id, 'res_i'));
+            let sprefix = [HPi,Stri,Magi,Skli,Spdi,Lcki,Defi,Resi];
+
+            let HPSG = findObjs({ characterid: attacker.id, name: "HP_i", type: "attribute"})[0];
+            let StrSG = findObjs({ characterid: attacker.id, name: "Str_i", type: "attribute"})[0];
+            let MagSG = findObjs({ characterid: attacker.id, name: "Mag_i", type: "attribute"})[0];
+            let SklSG = findObjs({ characterid: attacker.id, name: "Skl_i", type: "attribute"})[0];
+            let SpdSG = findObjs({ characterid: attacker.id, name: "Spd_i", type: "attribute"})[0];
+            let LckSG = findObjs({ characterid: attacker.id, name: "Lck_i", type: "attribute"})[0];
+            let DefSG = findObjs({ characterid: attacker.id, name: "Def_i", type: "attribute"})[0];
+            let ResSG = findObjs({ characterid: attacker.id, name: "Res_i", type: "attribute"})[0];
+            let statslist = [HPSG,StrSG,MagSG,SklSG,SpdSG,LckSG,DefSG,ResSG];
+            log(statslist);
+            let slist = ["HP","Str","Mag","Skl","Spd","Lck","Def","Res"];
+            for (var i = 0; i < growthslist.length - 1; i++){
+                gi = growthslist[i];
+                log(gi);
+                if (randomInteger(100) < gi){
+                    statslist[i].setWithWorker({current: sprefix[i] + 1});
+                    if (gi > 100){
+                        if (randomInteger(100) < gi){
+                            Lvstr += "\n + 2 to "+ slist[i] + "!";
+                            statslist[i].setWithWorker({current: sprefix[i] + 2});
+                        } else{
+                            Lvstr += "\n + 1 to "+ slist[i] + "!";
                         }
                     } else {
-                        chatstr += "\n Staff is not in range!"
+                        Lvstr += "\n + 1 to "+ slist[i] + "!";
                     }
                 }
             }
+            log(Lvstr);
+            sendChat(who,Lvstr);
         }
-        sendChat(who, chatstr);
 
     }
 });
