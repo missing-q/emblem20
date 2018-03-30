@@ -17,9 +17,8 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - A fully-fledged, dynamic skills system allowing for the creation of custom skills! See the [wiki](https://github.com/missing-q/emblem20/wiki) for more details!
 
 ## To Do ##
-- Add more skill parameters, features, etc. as dictated by missing skills in the [wiki.](https://github.com/missing-q/emblem20/wiki)
-- Implement the different effects of different magic types
-- Make an easy way to do terrain bonuses and other out-of-battle factors that influence hit/crit/avo. Maybe a macro?
+- Add more skills to the [wiki!](https://github.com/missing-q/emblem20/wiki)
+- Eventually figure out a good way to handle "aura" skills (Hex, Charm, etc.)
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
@@ -46,6 +45,16 @@ Well, right now, the best way to use it is copy-paste the code into your own gam
 **Use-staff**
 
 `!staff @{selected|token_id} @{target|token_id}`
+
+**Skill-Command**
+
+`!skill @{selected|token_id} @{target|token_id}`
+
+**Modify-Stats**\*
+
+`!stats @{selected|token_id} ?{Hit Modifier: @{selected|hitmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Crit Modifier: @{selected|critmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Avoid Modifier: @{selected|avomod} +|0|5|10|15|20|-20|-15|-10|-5} ?{Dodge Modifier: @{selected|ddgmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Damage Modifier: @{selected|dmgmod} + |0|1|2|3|4|-1|-2|-3|-4}`
+
+_*I suggest making this one only viewable by the GM, since they'll be doing a lot of background work with this macro._
 
 For convenience' sake, check the box that says "Show as token action". Make sure to select the token you're using before taking any actions.
 
