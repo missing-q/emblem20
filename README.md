@@ -24,15 +24,14 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 - Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
 
-## How can I use this now? ##
+## Setup ##
 
-Well, right now, the best way to use it is copy-paste the code into your own game! Be warned, this requires a premium or a pro account.
+Now that it's up on Roll20, you can easily add Emblem20 to your game! Be warned, adding the full system requires a premium or a pro account.
 
-1. Copy all of sheet.html, and when you open up your game management screen on Roll20, click on the dropdown to the right. You should see the **Game Settings** option. Open that up.
-2. On your game settings, set the character sheet type to **custom sheet**. This will open up a code editor. Paste the entirety of sheet.html in the HTML tab.
-3. Copy all of sheet.css, and likewise, paste it into the CSS tab. Save your game settings at this point.
-4. Now go back to the game management screen, and click on API scripts. Click on the New Script tab. Copy and paste base.js, item.js, and staff.js into their own separate script tabs.
-5. Finally, go into your game, and click to the macros tab. Copy-paste these macros into your game- the scripts won't work without them otherwise.
+1. When you open up your game management screen on Roll20, click on the dropdown to the right. You should see the **Game Settings** option. Open that up.
+2. On your game settings, search for **Fire Emblem Tabletop**. Select that option.
+3. Now go back to the game management screen, and click on API scripts. (Requires a pro account!!) Click on Roll20 script library, and search for **Fire Emblem Tabletop Combat Script**. Add that to your game!
+4. Go into your game, and click to the macros tab. Copy-paste these macros into your game- the scripts won't work without them otherwise.
 
 **Attack**
 
@@ -56,7 +55,11 @@ Well, right now, the best way to use it is copy-paste the code into your own gam
 
 _*I suggest making this one only viewable by the GM, since they'll be doing a lot of background work with this macro._
 
-For convenience' sake, check the box that says "Show as token action". Make sure to select the token you're using before taking any actions.
+5. For convenience' sake, check the box that says "Show as token action" for each macro. Make sure to select the token you're using before taking any actions.
+
+6. Finally, pull up the turn order by clicking the clock icon on the sidebar, and click the blue settings icon. Add a custom item named **Turn Counter** with the formula +1. 
+
+And you're done! If you want the latest updates and tweaks to Emblem20, feel free to individually copy the character sheet and API scripts; just be warned that they may be a little less than stable.
 
 **The macros and their linked scripts will *not work properly* on a token if it's not linked to a character in the Journal.**
 
