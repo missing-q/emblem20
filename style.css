@@ -2,6 +2,8 @@ body {
   background: linear-gradient(#0E0b16, #121223);
   background-repeat: no-repeat;
   color: #e7bfdd;
+  height: 100%;
+  width: 100%;
 }
 /*Palette:
 Black (main): #0e0b16
