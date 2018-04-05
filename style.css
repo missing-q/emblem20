@@ -5,6 +5,13 @@ body {
   height: 100vh;
   width: 100vh;
 }
+.link-wrapper {
+  position: relative;
+  display: block;
+  padding: 20px 0;
+  font-size: 5em;
+}
+
 /*Palette:
 Black (main): #0e0b16
 White (text): #e7bfdd
