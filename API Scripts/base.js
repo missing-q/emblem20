@@ -18,12 +18,18 @@ on('chat:message', function(msg) {
     if (Campaign().get("turnorder") == "") turnorder = [];
     else turnorder = JSON.parse(Campaign().get("turnorder"));
     for (i in turnorder){
-        if (turnorder[i].custom == "Turn Counter"){
+        if (turnorder[i].custom.toLowerCase() == ("turn counter" || "turncounter")){
             turncounter = turnorder[i]
         }
     }
-    let n = turncounter.pr ||0
-    //log(turncounter)
+
+    let n;
+    if (turncounter != undefined){
+        n = turncounter.pr;
+    } else {
+        n = 0
+    }
+    //log(turncounter);
 
     // Don't run if it's any other command
     if (command == 'combat') {
