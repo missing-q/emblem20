@@ -7,7 +7,7 @@ function ManhDist(token1,token2) { //Manhattan Distance in tiles between two uni
     let BYCoord = token2.get("top");
     let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
     return (diff/70)
-}
+};
 
 on('chat:message', function(msg) {
     if (msg.type != 'api') return;
@@ -18,18 +18,19 @@ on('chat:message', function(msg) {
     if (Campaign().get("turnorder") == "") turnorder = [];
     else turnorder = JSON.parse(Campaign().get("turnorder"));
     for (i in turnorder){
-        if (turnorder[i].custom.toLowerCase() == ("turn counter" || "turncounter")){
+        if (turnorder[i].custom == "Turn Counter"){
             turncounter = turnorder[i]
         }
     }
-
+    
     let n;
     if (turncounter != undefined){
         n = turncounter.pr;
     } else {
         n = 0
     }
-    //log(turncounter);
+    
+    //log(turncounter)
 
     // Don't run if it's any other command
     if (command == 'combat') {
@@ -79,7 +80,6 @@ on('chat:message', function(msg) {
         var defender = getObj('character', targetToken.get('represents'));
         let AName = attacker.get('name');
         let DName = defender.get('name');
-        sendChat(who, '/em attacks ' + DName + '!\n')
         let Chatstr = '';
 
         //Grab basic stats
@@ -93,6 +93,8 @@ on('chat:message', function(msg) {
         let EXPA = Number(CurrEXP.get("current"));
         let IsPromoA = getAttrByName(attacker.id, 'isPromo');
         let IsPromoB = getAttrByName(defender.id, 'isPromo');
+        let UACounterA = getAttrByName(attacker.id, 'UACounter');
+        let UACounterB = getAttrByName(defender.id, 'UACounter');
         let HPA = Number(getAttrByName(attacker.id, 'hp_current'));
         let HPB = Number(getAttrByName(defender.id, 'hp_current'));
         let StrA = Number(getAttrByName(attacker.id, 'str_total'));
@@ -221,10 +223,10 @@ on('chat:message', function(msg) {
         let QuadB = false;
         let CanAttackA = true;
         let CanAttackB = true;
-
+        
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         let SkillsB = findObjs({ characterid: defender.id, type: "ability"});
-
+        
         //Weapon Rank threshold values
         let WRankA_num;
         let WRankB_num;
@@ -246,6 +248,7 @@ on('chat:message', function(msg) {
             log("Attacker's weapon is usable!");
         } else {
             log("Attacker's weapon is not usable!");
+            
             CanAttackA = false;
         }
         if ((WepUB[WepTypes.indexOf(WTypeB)] == 1) && (WepRanks[WepTypes.indexOf(WTypeB)].get("current") >= WRankB_num)){
@@ -254,16 +257,27 @@ on('chat:message', function(msg) {
             log("Defender's weapon is not usable!");
             CanAttackB = false;
         }
+        
+        //unarmed counter checking
+        if ((UsesA -= undefined) && (UACounterA == false)){
+            CanAttackA = false
+        }
+        if ((UsesB == undefined) && (UACounterB == false)){
+            CanAttackB = false
+        }
+        
+        let effectiveA;
+        let effectiveB; 
         //Check for weapon effectiveness- HAS TO BE BEFORE stat targeting calcs so it can factor in Mt.
         if ( ((SkillsA.filter(e => e.get("name") === 'Beastbane').length > 0) && WeaknessB.includes("Beast")) || ((SkillsA.filter(e => e.get("name") === 'Golembane').length > 0) && WeaknessB.includes("Construct")) || ( StrengthsA.includes("Beast") && WeaknessB.includes("Beast")) || ( StrengthsA.includes("Flier") && WeaknessB.includes("Flier")) || ( StrengthsA.includes("Dragon") && WeaknessB.includes("Dragon")) || ( StrengthsA.includes("Armor") && WeaknessB.includes("Armor")) || ( StrengthsA.includes("Monster") && WeaknessB.includes("Monster")) ){
             MtA *= 3;
-            Chatstr += "Attacker has weapon effectiveness! \n";
+            effectiveA = true;
         }
         if ( ((SkillsB.filter(e => e.get("name") === 'Beastbane').length > 0) && WeaknessA.includes("Beast")) || ((SkillsA.filter(e => e.get("name") === 'Golembane').length > 0) && WeaknessB.includes("Construct")) || ( StrengthsB.includes("Beast") && WeaknessA.includes("Beast")) || ( StrengthsB.includes("Flier") && WeaknessA.includes("Flier")) || ( StrengthsB.includes("Dragon") && WeaknessA.includes("Dragon")) || ( StrengthsB.includes("Armor") && WeaknessA.includes("Armor")) || ( StrengthsB.includes("Monster") && WeaknessA.includes("Monster")) ){
             MtB *= 3;
-            Chatstr += "Defender has weapon effectiveness! \n";
+            effectiveB = true;
         }
-
+        
         //Targeted stat
         if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
             DmgtypeA = "Physical";
@@ -290,7 +304,7 @@ on('chat:message', function(msg) {
         if ((WTypeA == "Dark Magic") && (MagWeps.includes(WTypeB))){
             DmgA += 4
         }
-
+        
         log(DmgtypeA);
         log(DmgA);
         if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
@@ -338,6 +352,8 @@ on('chat:message', function(msg) {
         let WIN = WepTypes.indexOf(WTypeA);
         let CurrWR = WepRanks[WIN];
         let CWRVal = Number(CurrWR.get("current")); //Assume number because it's a numerical input
+        let WTAA;
+        let WTAB;
         log(CurrWR);
         log(CWRVal);
         if( (WIndexA == 1 && WIndexB == 3) || (WIndexA == 3 && WIndexB == 2) || (WIndexA == 2 && WIndexB == 1) || (WIndexA == 4 && WIndexB == 5) || (WIndexA == 5 && WIndexB == 6) || (WIndexA == 6 && WIndexB == 4) || (WIndexA == 7 && WIndexB == 8) || (WIndexA == 8 && WIndexB == 9) || (WIndexA == 9 && WIndexB == 7)) {
@@ -345,14 +361,14 @@ on('chat:message', function(msg) {
             HitA +=15;
             DmgB -= 1;
             HitB -=15;
-            Chatstr += "Attacker has WTA! \n";
+            WTAA = true;
         }
         if( (WIndexA == 3 && WIndexB == 1) || (WIndexA == 2 && WIndexB == 3) || (WIndexA == 1 && WIndexB == 2) || (WIndexA == 5 && WIndexB == 4) || (WIndexA == 6 && WIndexB == 5) || (WIndexA == 4 && WIndexB == 6) || (WIndexA == 8 && WIndexB == 7) || (WIndexA == 9 && WIndexB == 8) || (WIndexA == 7 && WIndexB == 9)) {
             DmgA -=1;
             HitA -=15;
             DmgB += 1;
             HitB +=15;
-            Chatstr += "Defender has WTA! \n";
+            WTAB = true;
         }
         if (DmgA < 0){
             DmgA = 0;
@@ -390,7 +406,7 @@ on('chat:message', function(msg) {
             }
         }
         log(SkillsA)
-
+        
         for (var i in SkillsB){
             SkillsB[i] = SkillsB[i].get("action");
             if (SkillsB[i] != ""){
@@ -473,9 +489,13 @@ on('chat:message', function(msg) {
         let StattargetE;
         let Dmg_U;
         let Dmg_E;
-        let EXPAmod = (10 + ((Math.abs(InLvB-InLvA)*3)));
+        let leveldiff = InLvB-InLvA;
+        if (leveldiff < 0){
+            leveldiff = 1;
+        }
+        let EXPAmod = (10 + (leveldiff*3));
         let WEXPA = 2;
-
+        
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
             log("obj is not an object :(")
@@ -583,7 +603,7 @@ on('chat:message', function(msg) {
                 characterid: targetid,
                 name: "Res_bd"
             })[0];
-
+            
             //nice stat-variables for use in expressions and such
             let HP_StatU = getAttrByName(userid, 'hp_total');
             let HP_StatE = getAttrByName(targetid, 'hp_total');
@@ -603,7 +623,7 @@ on('chat:message', function(msg) {
             let Def_StatE = getAttrByName(targetid, 'def_total');
             let Res_StatU = getAttrByName(userid, 'res_total');
             let Res_StatE = getAttrByName(targetid, 'res_total');
-
+            
             let rng;
             if (obj.rng == "Skill") {
                 rng = RNGSklU;
@@ -618,7 +638,7 @@ on('chat:message', function(msg) {
                 return;
             }
             log(obj.rng)
-
+            
             //actual skill function
             function skillMain(){
                 //PhysmagE
@@ -631,7 +651,7 @@ on('chat:message', function(msg) {
                     PhysmaginvE = getAttrByName(targetid, "str_total");
                 } //I would add a def/res parameter, but I'm just going to be lazy and use the defense AND resistance definition for Luna.
                 log("PhysmagE is " + PhysmagE)
-
+                
                 //PhysmagU
                 if (DmgtypeU == "Physical" || DmgtypeU == "Firearm") {
                     PhysmagU = getAttrByName(userid, "str_total");
@@ -642,10 +662,10 @@ on('chat:message', function(msg) {
                     PhysmaginvU = getAttrByName(userid, "str_total");
                 }
                 log("PhysmagU is " + PhysmagU)
-
-
-                /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and
-                usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
+                
+                
+                /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and 
+                usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it, 
                 so I think it should be alright. Oh well!*/
                 let DamagemodU = eval(obj.u_damagemod);
                 log("Damage mod is " + DamagemodU)
@@ -669,21 +689,21 @@ on('chat:message', function(msg) {
                 }
                 let StattargetmodU = eval(obj.u_stat_targetmod);
                 let StattargetmodE = eval(obj.e_stat_targetmod);
-
+                
                 if (obj.u_stat_target != "none"){
                     StattargetU.setWithWorker({
                         current: Number(StattargetU.get("current")) + Number(StattargetmodU)
                     });
                     log("Set targeted stat to "+ StattargetU.get("current"));
                 }
-
+                
                 if (obj.e_stat_target != "none"){
                     StattargetE.setWithWorker({
                         current: Number(StattargetE.get("current")) + Number(StattargetmodE)
                     });
                     log("Set targeted stat to "+ StattargetE.get("current"));
                 }
-
+                
                 if (userid == attacker.id) {
                     log("Damage before is " + DmgA)
                     DmgA += DamagemodU;
@@ -716,8 +736,8 @@ on('chat:message', function(msg) {
                     HPA = parseInt(HPA) + HealmodE;
                 }
                 log(HPA)
-
-                if (obj.radius != 0){
+                
+                if (obj.radius != 0){ 
                     //tortured screaming
                     let tokenInRadius = filterObjs(function(token) {
                         if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken,token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
@@ -740,7 +760,7 @@ on('chat:message', function(msg) {
                         let CritC = findObjs({ characterid: char, name: "Critmod"})[0];
                         let AvoC = findObjs({ characterid: char, name: "Avomod"})[0];
                         let DdgC = findObjs({ characterid: char, name: "Ddgmod"})[0];
-
+                        
                         //numerical stats
                         let HPcurrStat = getAttrByName(char, 'HP_current');
                         let StrStat = getAttrByName(char, 'Str_total');
@@ -754,7 +774,7 @@ on('chat:message', function(msg) {
                         let CritStat = getAttrByName(char, 'Crit');
                         let AvoStat = getAttrByName(char, 'Avo');
                         let DdgStat = getAttrByName(char, 'Ddg');
-
+                        
                         effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]))
 
@@ -763,11 +783,11 @@ on('chat:message', function(msg) {
                             current: rad_effect
                         });
                         log(effect[0].get("current"))
-
+                        
                         if ((effect[0] == HPcurrC) && (char == attacker.id)){
                             HPA += parseInt(effect[1])
                         }
-
+                        
                         if ((effect[0] == HPcurrC) && (char == defender.id)){
                             HPB += parseInt(effect[1])
                         }
@@ -780,18 +800,18 @@ on('chat:message', function(msg) {
                         Skill(userid, targetid, Child_Skill, "any"); //child implementations of preexisting skills should have the triggertime "any" as well
                     }
                 }
-
+                
                 //Attack multiplier for stuff like Astra
                 if (obj.attack_multiplier != 0){
                     if (userid == attacker.id){
                         for (i = 0; i < obj.attack_multiplier; i++){
-
+                            
                             if (randomInteger(100) < (HitA - AvoB)){
-                                Chatstr += AName + "'s attack hits! \n";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits! </p>";
                                 //Check if attack crits
                                 if (randomInteger(100) < (CritA - DdgB)){
                                     DmgA *= 3;
-                                    Chatstr += AName+ " crits! \n";
+                                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits! </p>";
                                 }
                                 //No AOE checking because that's stupidly broken. >:O
                                 HPB -= DmgA;
@@ -803,22 +823,22 @@ on('chat:message', function(msg) {
                                 DecUsesA();
                                 log("Decreased weapon uses!");
                             } else {
-                                Chatstr += AName+ " misses! \n";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses! </p>";
                             }
-
+                            
                         }
-
+                        
                         DoubleA = false;
-
+                        
                     }
                     else {
                         for (i = 0; i < obj.attack_multiplier; i++){
                             if (randomInteger(100) < (HitB - AvoA)){
-                                Chatstr += DName+ "'s attack hits!";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits! </p>";
                                 //Check if attack crits
                                 if (randomInteger(100) < (CritB - DdgA)){
                                     DmgB *= 3;
-                                    Chatstr += "\n"+ DName+ " crits!";
+                                    Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits!</p>";
                                 }
                                 HPA -= DmgB;
                                 CurrHPA.set("current", HPA);
@@ -826,22 +846,22 @@ on('chat:message', function(msg) {
                                 DecUsesB();
                                 log("Decreased weapon uses!");
                             } else {
-                                Chatstr += DName+ " misses!";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses! </p>";
                             }
-
+                            
                         }
-
+                        
                         DoubleB = false;
-
+                        
                     }
                 }
                 if (obj.custom_string != ""){
-                    Chatstr += '<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
+                    Chatstr += '<p><b style = "color: #4055df;">' + obj.custom_string + "</b></p>"
                 } else {
-                    Chatstr += '<b style = "color: #4055df;">' + obj.name + " activated!</b>\n"
+                    Chatstr += '<p><b style = "color: #4055df;">' + obj.name + " activated!</b></p>"
                 }
             }
-
+            
             //more conditional checks
             if (obj.e_physmagcond != false){
                 if ((obj.e_physmagcond == "Physical" && DmgtypeE == "Magical") || (obj.e_physmagcond == "Magical" && DmgtypeE == ("Physical" || "Firearm"))){
@@ -858,7 +878,7 @@ on('chat:message', function(msg) {
                     return;
                 }
             }
-
+            
             if (obj.rng != "none") {
                 if (randomInteger(100) < (rng * obj.rngmod)) {
                     skillMain();
@@ -879,7 +899,7 @@ on('chat:message', function(msg) {
             log("Whotriggered is " + obj.whotriggered);
             return;
         }}; //I know it looks weird, but don't touch this!
-
+        
         //before triggers
         for (i in SkillsA){
             Skill(attacker.id, defender.id, SkillsA[i], "before");
@@ -887,8 +907,49 @@ on('chat:message', function(msg) {
         for (i in SkillsB){
             Skill(defender.id, attacker.id, SkillsB[i], "before");
         }
-
-
+        
+        let dispHPA = HPA;
+        let dispHPB = HPB;
+        let dispDmgA = DmgA;
+        let dispDmgB = DmgB;
+        let dispHitA = HitA - AvoB
+        let dispHitB = HitB - AvoA
+        let dispCritA = CritA;
+        let dispCritB = CritB;
+        
+        if (effectiveA){
+            dispDmgA = '<span style = "color:green;">' + dispDmgA + '</span>'
+        }
+        if (effectiveB){
+            dispDmgB = '<span style = "color:green;">' + dispDmgB + '</span>'
+        }
+        
+        if (!CanAttackA){
+            dispDmgA = "--"
+            dispHitA = "--";
+            dispCritA = "--"
+        }
+        if (!CanAttackB){
+            dispDmgB = "--"
+            dispHitB = "--";
+            dispCritB = "--"
+        }
+        
+        if (dispHitA > 100){
+            dispHitA = 100
+        }
+        
+        if (dispHitB > 100){
+            dispHitB = 100
+        }
+        if (dispCritA > 100){
+            dispCritA = 100
+        }
+        
+        if (dispCritB > 100){
+            dispCritB = 100
+        }
+        
         //Actual battle script
         //Check if attacker's attack hits/is in range
         let diff = parseInt(ManhDist(selectedToken, targetToken));
@@ -904,10 +965,9 @@ on('chat:message', function(msg) {
             if ((diff >= Range1A) && (diff <= Range2A)){
                 log(Range1A + "-"+ Range2A)
                 diffcheckA = true;
-                Chatstr += AName+ "'s attack is in range! \n";
                 if (randomInteger(100) < (HitA - AvoB)){
-                    Chatstr += AName + "'s attack hits! \n";
-
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
+                    
                     //Battle skill trigger
                     for (i in SkillsA){
                         Skill(attacker.id, defender.id, SkillsA[i], "during");
@@ -915,11 +975,11 @@ on('chat:message', function(msg) {
                     for (i in SkillsB){
                         Skill(defender.id, attacker.id, SkillsB[i], "during");
                     }
-
+                    
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
-                        Chatstr += AName+ " crits! \n";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
                     }
                     //radius
                     if (AOEA != 0){
@@ -936,10 +996,10 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgA
                             });
-
+                            
                         }
                     }
-
+                    
                     HPB -= DmgA;
                     log("Damage is " + DmgA);
                     CurrHPB.set("current", HPB);
@@ -949,23 +1009,22 @@ on('chat:message', function(msg) {
                     DecUsesA();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += AName+ " misses! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses! </p>";
                 }
             } else {
-                Chatstr += AName + "'s attack is not in range! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " is not in range! </p>";
             }
         } else {
-            Chatstr += AName +" cannot attack!\n";
+            Chatstr += '<p style = "margin-bottom: 0px;">' + AName +" cannot attack!</p>";
         }
 
         if (CanAttackB == true){
             //Check if defender's attack hits
             if (((Range1B) <= (diff)) && ((diff) <= (Range2B))){
                 diffcheckB = true;
-                Chatstr += DName + "'s attack is in range! \n";
                 if (randomInteger(100) < (HitB - AvoA)){
-                    Chatstr += DName+ "'s attack hits!";
-
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
+                    
                     //battle skill trigger
                     for (i in SkillsB){
                         Skill(defender.id, attacker.id, SkillsB[i], "during");
@@ -973,11 +1032,11 @@ on('chat:message', function(msg) {
                     for (i in SkillsA){
                         Skill(attacker.id, defender.id, SkillsA[i], "during");
                     }
-
+                    
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += "\n"+ DName+ " crits!";
+                        Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
                     }
                     //radius
                     if (AOEB != 0){
@@ -994,30 +1053,30 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgB
                             });
-
+                            
                         }
                     }
-
+                    
                     HPA -= DmgB;
                     CurrHPA.set("current", HPA);
                     //Defender gets no WEXP to discourage turtling on EP
                     DecUsesB();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += DName+ " misses!";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
                 }
             } else {
-                Chatstr += DName + "'s attack is not in range!";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " is not in range!</p>";
             }
         } else {
-            Chatstr += DName +" cannot attack!";
+            Chatstr += '<p style = "margin-bottom: 0px;">' + DName +" cannot attack!</p>";
         }
 
         //Attacker doubles; I don't think I should need to do usability checking for doubleattacking since it's checked within the battle calc
         if ((DoubleA === true) && (CanAttackA == true) && (diffcheckA == true)){
-            Chatstr += "\n"+ AName+ " doubleattacks! \n";
+            Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " doubleattacks! </p>";
             if (randomInteger(100) < (HitA - AvoB)){
-                Chatstr += AName+ "'s attack hits!";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
                 for (i in SkillsA){
                     Skill(attacker.id, defender.id, SkillsA[i], "during");
                 }
@@ -1027,7 +1086,7 @@ on('chat:message', function(msg) {
                 //Check if attack crits
                 if (randomInteger(100) < (CritA - DdgB)){
                     DmgA *= 3;
-                    Chatstr += "\n"+ AName+ " crits!";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
                 }
                 //radius
                 if (AOEA != 0){
@@ -1044,10 +1103,10 @@ on('chat:message', function(msg) {
                         HPchar.setWithWorker({
                             current: HPchar.get("current") - DmgA
                         });
-
+                            
                     }
                 }
-
+                
                 HPB -= DmgA;
                 CurrHPB.set("current", HPB);
                 CWRVal += WEXPA;
@@ -1056,12 +1115,12 @@ on('chat:message', function(msg) {
                 DecUsesA();
                 log("Decreased weapon uses!");
             } else {
-                Chatstr += AName+ " misses!";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
             }
             if (QuadA === true){
-                Chatstr += AName+ " tripleattacks! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " tripleattacks!</p>";
                 if (randomInteger(100) < (HitA - AvoB)){
-                    Chatstr += AName+ "'s attack hits! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>"
                     for (i in SkillsA){
                         Skill(attacker.id, defender.id, SkillsA[i], "during");
                     }
@@ -1071,7 +1130,7 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
-                        Chatstr += AName+ " crits! \n";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
                     }
                     //radius
                     if (AOEA != 0){
@@ -1088,10 +1147,10 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgA
                             });
-
+                            
                         }
                     }
-
+                    
                     HPB -= DmgA;
                     CurrHPB.set("current", HPB);
                     CWRVal += WEXPA;
@@ -1100,11 +1159,11 @@ on('chat:message', function(msg) {
                     DecUsesA();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += AName+ " misses! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
                 }
-                Chatstr += AName+ " quadrupleattacks! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " quadrupleattacks!</p>";
                 if (randomInteger(100) < (HitA - AvoB)){
-                    Chatstr += AName+ "'s attack hits! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
                     for (i in SkillsA){
                         Skill(attacker.id, defender.id, SkillsA[i], "during");
                     }
@@ -1114,7 +1173,7 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
-                        Chatstr += AName+ " crits! \n";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
                     }
                     //radius
                     if (AOEA != 0){
@@ -1131,10 +1190,10 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgA
                             });
-
+                            
                         }
                     }
-
+                    
                     HPB -= DmgA;
                     CurrHPB.set("current", HPB);
                     CWRVal += WEXPA;
@@ -1143,16 +1202,16 @@ on('chat:message', function(msg) {
                     DecUsesA();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += AName+ " misses!";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
                 }
             }
         }
 
         //Defender doubles
         if ((DoubleB === true) && (CanAttackB == true) && (diffcheckB == true)){
-            Chatstr += "\n"+ DName+ " doubleattacks! \n";
+            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " doubleattacks!</p>";
             if (randomInteger(100) < (HitB - AvoA)){
-                Chatstr += DName+ "'s attack hits! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
                 for (i in SkillsB){
                     Skill(defender.id, attacker.id, SkillsB[i], "during");
                 }
@@ -1162,7 +1221,7 @@ on('chat:message', function(msg) {
                 //Check if attack crits
                 if (randomInteger(100) < (CritB - DdgA)){
                     DmgB *= 3;
-                    Chatstr += DName+ " crits! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
                 }
                 //radius
                 if (AOEB != 0){
@@ -1181,18 +1240,18 @@ on('chat:message', function(msg) {
                         });
                     }
                 }
-
+                
                 HPA -= DmgB;
                 CurrHPA.set("current", HPA);
                 DecUsesB();
                 log("Decreased weapon uses!");
             } else {
-                Chatstr += DName+ " misses! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
             }
             if (QuadB === true){
-                Chatstr += DName+ " tripleattacks! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " tripleattacks!</p>";
                 if (randomInteger(100) < (HitB - AvoA)){
-                    Chatstr += DName+ "'s attack hits! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
                     for (i in SkillsB){
                         Skill(defender.id, attacker.id, SkillsB[i], "during");
                     }
@@ -1202,7 +1261,7 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += DName+ " crits! \n";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
                     }
                     //radius
                     if (AOEB != 0){
@@ -1219,20 +1278,20 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgB
                             });
-
+                            
                         }
                     }
-
+                    
                     HPA -= DmgB;
                     CurrHPA.set("current", HPA);
                     DecUsesB();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += DName+ " misses! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
                 }
-                Chatstr += DName+ " quadrupleattacks! \n";
+                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " quadrupleattacks!</p>";
                 if (randomInteger(100) < (HitB - AvoA)){
-                    Chatstr += DName+ "'s attack hits! \n";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
                     for (i in SkillsB){
                         Skill(defender.id, attacker.id, SkillsB[i], "during");
                     }
@@ -1242,7 +1301,7 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += DName+ " crits! \n";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
                     }
                     //radius
                     if (AOEB != 0){
@@ -1259,16 +1318,16 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - DmgB
                             });
-
+                            
                         }
                     }
-
+                    
                     HPA -= DmgB;
                     CurrHPA.set("current", HPA);
                     DecUsesB();
                     log("Decreased weapon uses!");
                 } else {
-                    Chatstr += DName+ " misses!";
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
                 }
             }
         }
@@ -1279,9 +1338,72 @@ on('chat:message', function(msg) {
         for (i in SkillsB){
             Skill(defender.id, attacker.id, SkillsB[i], "after");
         }
-
-        sendChat(who,'<div ' + css.attack + '>'+ Chatstr +'</div>');
-        log('<div ' + css.attack + '>'+ Chatstr +'</div>');
+        
+        let timesA = "";
+        let timesB = "";
+        
+        //for damage display
+        if (DoubleA){
+            timesA = " x 2"
+            if (QuadA){
+                timesA = " x 4"
+            }
+        }
+        if (DoubleB){
+            timesB = " x 2"
+            if (QuadB){
+                timesB = " x 4"
+            }
+        }
+        if (WTAA){
+            dispDmgA = DmgA+ '<span style = "color: blue;"> ↑</span>'
+            dispDmgB = DmgB + '<span style = "color: red;"> ↓</span>'
+        }
+        if (WTAB){
+            dispDmgA = DmgA + '<span style = "color: red;"> ↓</span>'
+            dispDmgB = DmgB+ '<span style = "color: blue;"> ↑</span>'
+        }
+        
+        //adapted from Ciorstaidh's Faerun Calendar css
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
+        var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+        sendChat(who, '<div ' + divstyle + '>' + //--
+                '<div ' + headstyle + '>Combat</div>' + //--
+                '<div style = "margin: 0px auto; width: 100%; text-align: center;">' + //--
+                '<div ' + wrapperstyle +'>' + //--
+                    '<div ' + namestyle + '>'+ AName +'</div>' + //--
+                    '<div ' + statdiv +'>' + //--
+                        '<table>'+ //--
+                            '<tr><td ' + cellabel +'> HP </td> <td style = "padding: 2px;">' + dispHPA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Dmg </td> <td style = "padding: 2px;">' + dispDmgA + timesA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Hit% </td> <td style = "padding: 2px;">' + dispHitA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Crit% </td> <td style = "padding: 2px;">' + dispCritA + '</td></tr>' + //--
+                        '</table>'+ //--
+                    '</div>' + //--
+                '</div>' + //--
+                
+                '<div ' + wrapperstyle +'>' + //--
+                    '<div ' + namestyle + '>'+ DName +'</div>' + //--
+                    '<div ' + statdiv +'>' + //--
+                        '<table>'+ //--
+                            '<tr><td style = "padding: 2px;">' + dispHPB + '</td><td ' + cellabel +'> HP </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + dispDmgB + timesB + '</td><td ' + cellabel +'> Dmg </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + dispHitB  + '</td><td ' + cellabel +'> Hit% </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + dispCritB + '</td><td ' + cellabel +'> Crit% </td></tr>' + //--
+                        '</table>'+ //--
+                    '</div>' + //--
+                '</div>' + //--
+                '</div>' + //--
+                
+                '<div style = "height: 1px; background-color: #353535; width: 70%; margin: 0 auto; margin-bottom: 4px;"></div>' + //--
+                '<div style = "margin: 0 auto; width: 70%;">' + Chatstr + '</div>' + //--
+            '</div>'
+        );
         if (IsPromoA == true){
             InLvA += 20;
         }
@@ -1291,6 +1413,7 @@ on('chat:message', function(msg) {
         //Calculate EXP; commented out for the test
         EXPA += EXPAmod
         CurrEXP.set("current",EXPA);
+        log(EXPA)
         if (CurrEXP.get("current") >= 100){
             CurrEXP.set("current",CurrEXP.get("current")-100);
             //Get growths
@@ -1347,7 +1470,7 @@ on('chat:message', function(msg) {
             log(Lvstr);
             sendChat(who,Lvstr);
         }
-
+        
     }
 });
 
@@ -1364,8 +1487,14 @@ on("change:campaign:turnorder", function(turn) {
     if (turnorder[0] !== turncounter){ //STRICT EQUALITY checking for if it's the turncounter's "turn"
         return;
     }
-    let n = turncounter.pr ||0
-    log(turncounter)
+    
+    let n;
+    if (turncounter != undefined){
+        n = turncounter.pr;
+    } else {
+        n = 0
+    }
+    
     log(n)
     Skills = filterObjs(function(obj) {
         if (obj.get('type') !== 'ability' || obj.get('action').indexOf('"triggertime": "turn"') == -1) return false;
@@ -1377,12 +1506,12 @@ on("change:campaign:turnorder", function(turn) {
            let id = Skills[i].get('characterid');
            Skills[i] = JSON.parse(Skills[i].get("action"));
            Skills[i]["ID"] = id;
-       }
+       } 
     } else {
         return;
     }
     log(Skills)
-
+    
     //Skills system, user-centric version
     let user;
         let RNGSklU;
@@ -1407,7 +1536,7 @@ on("change:campaign:turnorder", function(turn) {
         let PhysmaginvU;
         let HPA;
         let CurrHPA;
-
+        
         function Skill(userid, obj, triggertime) { //haha END ME
             if (typeof obj != "object") {
                 log("obj is not an object :(")
@@ -1501,8 +1630,8 @@ on("change:campaign:turnorder", function(turn) {
             function skillMain() {
                 //No Physmag :O
 
-                /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and
-                usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
+                /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and 
+                usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it, 
                 so I think it should be alright. Oh well!*/
                 let HealmodU = parseInt(eval(obj.u_healfactor));
                 log("HealmodU is" + HealmodU)
@@ -1618,7 +1747,7 @@ on("change:campaign:turnorder", function(turn) {
 
                     }
                 }
-
+                
                 CurrHPU.setWithWorker({
                     current: HPA
                 });
@@ -1629,7 +1758,7 @@ on("change:campaign:turnorder", function(turn) {
                         Skill(userid, Child_Skill, "any"); //child implementations of preexisting skills should have the triggertime "any" as well
                     }
                 }
-
+                
                 let Chatstr;
                 if (obj.custom_string != "") {
                     Chatstr = '<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
@@ -1656,3 +1785,4 @@ on("change:campaign:turnorder", function(turn) {
             Skill(Skills[i].ID, Skills[i], "turn")
         }
 });
+
