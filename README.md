@@ -11,8 +11,8 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Different healing and status staves
 - Different promotional items for each class
 - Light tomes deal little damage with a wide range, and dark tomes gain stacking bonuses when being used against another tome-user (not implemented yet).
-- Firearms don't use strength in their calculations, instead running off of pure Might, and are counted as a separate damage type. 
-- Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle. 
+- Firearms don't use strength in their calculations, instead running off of pure Might, and are counted as a separate damage type.
+- Weapon usabilty checking based on class and weapon rank. Not implemented yet for staves, but implemented for normal battle.
 - Broken weapons have "broken" appended to their names when they run out of uses, and their rank is set UU (unusable)! This allows for them to be repaired at the GM's discretion (or alternatively, deleted).
 - A fully-fledged, dynamic skills system allowing for the creation of custom skills! See the [wiki](https://github.com/missing-q/emblem20/wiki) for more details!
 
@@ -20,7 +20,6 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Add more skills to the [wiki!](https://github.com/missing-q/emblem20/wiki)
 - Eventually figure out a good way to handle "aura" skills (Hex, Charm, etc.)
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Tellius mechanics, etc.
-- Fix AOE calculations so that damage is calculated for each individual unit
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Finish styling other system messages; battle messages are done but I still need to get around to everything else.
 - Add a glossary of terms to the wiki so players unfamiliar with FE terms can have a quick reference point.
@@ -58,7 +57,7 @@ _*I suggest making this one only viewable by the GM, since they'll be doing a lo
 
 5. For convenience' sake, check the box that says "Show as token action" for each macro. Make sure to select the token you're using before taking any actions.
 
-6. Finally, pull up the turn order by clicking the clock icon on the sidebar, and click the blue settings icon. Add a custom item named **Turn Counter** with the formula +1. 
+6. Finally, pull up the turn order by clicking the clock icon on the sidebar, and click the blue settings icon. Add a custom item named **Turn Counter** with the formula +1.
 
 And you're done! If you want the latest updates and tweaks to Emblem20, feel free to individually copy the character sheet and API scripts; just be warned that they may be a little less than stable.
 

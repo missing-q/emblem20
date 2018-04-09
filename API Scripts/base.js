@@ -261,7 +261,7 @@ on('chat:message', function(msg) {
         }
 
         //unarmed counter checking
-        if ((UsesA -= undefined) && (UACounterA == false)){
+        if ((UsesA == undefined) && (UACounterA == false)){
             CanAttackA = false
         }
         if ((UsesB == undefined) && (UACounterB == false)){
@@ -379,7 +379,7 @@ on('chat:message', function(msg) {
         if (DmgB < 0){
             DmgB = 0;
         }
-        if (typeof(UsesA) === "object"){
+        if (typeof(UsesA) == "object"){
             function DecUsesA() {
                 UsesA.setWithWorker({current: Number(UsesA.get("current")) - 1});
             }
@@ -390,7 +390,7 @@ on('chat:message', function(msg) {
                 UsesA -= 1;
             }
         }
-        if (typeof(UsesB) === "object"){
+        if (typeof(UsesB) == "object"){
             function DecUsesB() {
                 UsesB.setWithWorker({current: Number(UsesB.get("current")) - 1});
             }
@@ -1015,18 +1015,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
                             characterid: char,
                             name: "HP_current"
                         })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgA
-                        });
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgA;
+                        let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtA *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+                            prov_DmgA = (StrA + MtA) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
+                            prov_DmgA = (MagA + MtA) - res_ch;
+                        }
+                        else if (WTypeA == "Firearm/Taneg.") {
+                            prov_DmgA = MtA - def_ch;
+                        }
+                        if (prov_DmgA < 0){
+                            prov_DmgA = 0;
+                        }
+                        if (randomInteger(100) < (HitA - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgA
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " damage!</p>";
+                        }
                     }
                 }
 
@@ -1075,18 +1099,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
                             characterid: char,
                             name: "HP_current"
                         })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgB
-                        });
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
                     }
                 }
 
@@ -1133,21 +1181,45 @@ on('chat:message', function(msg) {
             }
             //radius
             if (AOEA != 0){
-                let tokenInRadius = filterObjs(function(token) {
-                    if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA ) return false;
-                    else return true;
-                });
-                for (i in tokenInRadius){
-                    let char = tokenInRadius[i].get("represents");
-                    let HPchar = findObjs({
-                        characterid: char,
-                        name: "HP_current"
-                        })[0];
-                    HPchar.setWithWorker({
-                        current: HPchar.get("current") - DmgA
+                    let tokenInRadius = filterObjs(function(token) {
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        else return true;
                     });
+                    for (i in tokenInRadius){
+                        let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
+                        let HPchar = findObjs({
+                            characterid: char,
+                            name: "HP_current"
+                        })[0];
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
+                    }
                 }
-            }
 
             if (QuadA === true){
                 //tripleattacks
@@ -1185,18 +1257,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
                             characterid: char,
                             name: "HP_current"
-                            })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgA
-                        });
+                        })[0];
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
                     }
                 }
 
@@ -1236,18 +1332,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
                             characterid: char,
                             name: "HP_current"
-                            })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgA
-                        });
+                        })[0];
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
                     }
                 }
                 //
@@ -1287,21 +1407,45 @@ on('chat:message', function(msg) {
             }
             //radius
             if (AOEB != 0){
-                let tokenInRadius = filterObjs(function(token) {
-                    if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB ) return false;
-                    else return true;
-                });
-                for (i in tokenInRadius){
-                    let char = tokenInRadius[i].get("represents");
-                    let HPchar = findObjs({
-                        characterid: char,
-                        name: "HP_current"
-                    })[0];
-                    HPchar.setWithWorker({
-                        current: HPchar.get("current") - DmgB
+                    let tokenInRadius = filterObjs(function(token) {
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        else return true;
                     });
+                    for (i in tokenInRadius){
+                        let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
+                        let HPchar = findObjs({
+                            characterid: char,
+                            name: "HP_current"
+                        })[0];
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
+                    }
                 }
-            }
 
             if (QuadB === true){
                 //tripleattack
@@ -1336,19 +1480,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
-                        characterid: char,
+                            characterid: char,
                             name: "HP_current"
                         })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgB
-                        });
-
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
                     }
                 }
 
@@ -1372,22 +1539,45 @@ on('chat:message', function(msg) {
 
                     //radius
                     if (AOEB != 0){
-                        let tokenInRadius = filterObjs(function(token) {
-                            if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB ) return false;
-                            else return true;
-                        });
-                        for (i in tokenInRadius){
-                            let char = tokenInRadius[i].get("represents");
-                            let HPchar = findObjs({
-                                characterid: char,
-                                name: "HP_current"
-                            })[0];
+                    let tokenInRadius = filterObjs(function(token) {
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        else return true;
+                    });
+                    for (i in tokenInRadius){
+                        let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
+                        let HPchar = findObjs({
+                            characterid: char,
+                            name: "HP_current"
+                        })[0];
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
                             HPchar.setWithWorker({
-                                current: HPchar.get("current") - DmgB
+                                current: HPchar.get("current") - prov_DmgB
                             });
-
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
                         }
                     }
+                }
 
                     HPA -= DmgB;
                     CurrHPA.set("current", HPA);
@@ -1403,19 +1593,42 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
                         let char = tokenInRadius[i].get("represents");
+                        let char_name = tokenInRadius[i].get("name");
                         let HPchar = findObjs({
-                        characterid: char,
+                            characterid: char,
                             name: "HP_current"
                         })[0];
-                        HPchar.setWithWorker({
-                            current: HPchar.get("current") - DmgB
-                        });
-
+                        let def_ch = Number(getAttrByName(char, 'def_total'));
+                        let res_ch = Number(getAttrByName(char, 'res_total'));
+                        let weak_ch = getAttrByName(char, 'weaknesses');
+                        let avo_ch = getAttrByName(char, 'avo');
+                        let prov_DmgB;
+                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtB *= 3;
+                        }
+                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+                            prov_DmgB = (StrB + MtB) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
+                            prov_DmgB = (MagB + MtB) - res_ch;
+                        }
+                        else if (WTypeB == "Firearm/Taneg.") {
+                            prov_DmgB = MtB - def_ch;
+                        }
+                        if (prov_DmgB < 0){
+                            prov_DmgB = 0;
+                        }
+                        if (randomInteger(100) < (HitB - avo_ch)){
+                            HPchar.setWithWorker({
+                                current: HPchar.get("current") - prov_DmgB
+                            });
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                        }
                     }
                 }
 
