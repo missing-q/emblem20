@@ -20,6 +20,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 - Add more skills to the [wiki!](https://github.com/missing-q/emblem20/wiki)
 - Eventually figure out a good way to handle "aura" skills (Hex, Charm, etc.)
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Path of Radiance mechanics, etc.
+- Fix a bug that causes crit damage modifiers to stack
 - Stat initialization *before* adding a character's class for the possibility of creating attackable obstacles (alternatively, add an "object" class with no stats?)
 - Change the way attacking without a weapon is handled-instead of checking to see if the unit can use the stones/other weapon type (which is the current system, to accomodate for the homebrew Fists weapon type), make a separate flag for if they can attack without a weapon (which should be set to false by default).
 - Not a priority right now, but eventually style the battle messages to make them more visually appealing. It's possible to implement this at the moment, but I'd like to get more work done on more important features first.
