@@ -63,6 +63,19 @@ on('chat:message', function(msg) {
             current: Number(Hitmod.get("current")) + dmg
         });
 
-        sendChat(who, "Stats modified!");
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
+        var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+        sendChat(who, '<div ' + divstyle + '>' + //--
+            '<div ' + headstyle + '>Stats</div>' + //--
+            '<div style = "margin: 0 auto; width: 80%; margin-top: 4px;">' + //--
+            '<p style = "margin-bottom: 0px;"> Stats modified! </p>' + //--
+            '</div>' + //--
+        '</div>'
+        );
     }
 });

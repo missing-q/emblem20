@@ -51,9 +51,7 @@ on('chat:message', function(msg) {
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         for (var i in SkillsA){
             SkillsA[i] = SkillsA[i].get("action");
-            if (SkillsA[i] != ""){
-                SkillsA[i] = JSON.parse(SkillsA[i]);
-            }
+            SkillsA[i] = JSON.parse(SkillsA[i]);
         }
         let temp = []
         SkillsA.forEach(function(entry, i) {
@@ -155,6 +153,13 @@ on('chat:message', function(msg) {
         let HPB = Number(getAttrByName(defender.id, 'hp_current'));
         let CurrHPA = findObjs({ characterid: attacker.id, name: "HP_current"})[0];
         let CurrHPB = findObjs({ characterid: defender.id, name: "HP_current"})[0];
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
+        var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
 
         function Skill(userid, targetid, obj, triggertime) { //haha END ME
             if (typeof obj != "object") {
@@ -437,11 +442,15 @@ on('chat:message', function(msg) {
 
                 let Chatstr;
                 if (obj.custom_string != "") {
-                    Chatstr = '<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
+                    Chatstr = '<p style = "margin-bottom: 0px;"> <b style = "color: #4055df;">' + obj.custom_string + "</b></p>"
                 } else {
-                    Chatstr = '<b style = "color: #4055df;">'+attacker.get("name") + " used " + obj.name + "!</b>\n"
+                    Chatstr = '<p style = "margin-bottom: 0px;"><b style = "color: #4055df;">'+attacker.get("name") + " used " + obj.name + "!</b></p>"
                 }
-                sendChat(who, Chatstr);
+                sendChat(who, '<div ' + divstyle + '>' + //--
+                    '<div ' + headstyle + '>Skill</div>' + //--
+                    '<div style = "margin: 0 auto; width: 80%; margin-top: 4px;">' + Chatstr + '</div>' + //--
+                '</div>'
+                );
             }
 
             if (obj.rng != "none") {
@@ -506,18 +515,22 @@ on('chat:message', function(msg) {
                     statslist[i].setWithWorker({current: sprefix[i] + 1});
                     if (gi > 100){
                         if (randomInteger(100) < gi){
-                            Lvstr += "\n + 2 to "+ slist[i] + "!";
+                            Lvstr += '<p style = "margin-bottom: 0px;"> + 2 to ' + slist[i] + "!</p>";
                             statslist[i].setWithWorker({current: sprefix[i] + 2});
                         } else{
-                            Lvstr += "\n + 1 to "+ slist[i] + "!";
+                            Lvstr += '<p style = "margin-bottom: 0px;"> + 1 to '+ slist[i] + "!</p>";
                         }
                     } else {
-                        Lvstr += "\n + 1 to "+ slist[i] + "!";
+                        Lvstr += '<p style = "margin-bottom: 0px;"> + 1 to '+ slist[i] + "!</p>";
                     }
                 }
             }
             log(Lvstr);
-            sendChat(who,Lvstr);
+            sendChat(who, '<div ' + divstyle + '>' + //--
+                '<div ' + headstyle + '>Level Up</div>' + //--
+                '<div style = "margin: 0 auto; width: 80%; margin-top: 4px;">' + Lvstr + '</div>' + //--
+            '</div>'
+            );
         }
 
     }

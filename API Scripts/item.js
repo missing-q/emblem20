@@ -77,49 +77,57 @@ on('chat:message', function(msg) {
             name: "Hearty Cheese",
             type: "temp_statbooster",
             target: HPbd,
-            effect: 2
+            effect: 2,
+            targetstr: "HP"
         }
         const Spicy_Chicken = {
             name: "Spicy Chicken",
             type: "temp_statbooster",
             target: Strbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Str"
         }
         const Sweet_Honey = {
             name: "Sweet Honey",
             type: "temp_statbooster",
             target: Magbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Mag"
         }
         const Fresh_Bread = {
             name: "Fresh Bread",
             type: "temp_statbooster",
             target: Sklbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Skl"
         }
         const Exotic_Spice = {
             name: "Exotic Spice",
             type: "temp_statbooster",
             target: Spdbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Spd"
         }
         const Candy_Die = {
             name: "Candy Die",
             type: "temp_statbooster",
             target: Lckbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Lck"
         }
         const Hot_Soup = {
             name: "Hot Soup",
             type: "temp_statbooster",
             target: Defbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Def"
         }
         const Pure_Water = {
             name: "Pure Water",
             type: "temp_statbooster",
             target: Resbd,
-            effect: 2
+            effect: 2,
+            targetstr: "Res"
         }
         //Healing
         const Vulnerary = {
@@ -142,49 +150,57 @@ on('chat:message', function(msg) {
             name: "Fruit of Life",
             type: "statbooster",
             target: HPi,
-            effect: 2
+            effect: 2,
+            targetstr: "HP"
         }
         const Soma = {
             name: "Soma",
             type: "statbooster",
             target: Stri,
-            effect: 2
+            effect: 2,
+            targetstr: "Str"
         }
         const Golden_Apple = {
             name: "Golden Apple",
             type: "statbooster",
             target: Magi,
-            effect: 2
+            effect: 2,
+            targetstr: "Mag"
         }
         const Nethergranate = {
             name: "Nethergranate",
             type: "statbooster",
             target: Skli,
-            effect: 2
+            effect: 2,
+            targetstr: "Skl"
         }
         const Pegasus_Cheese = {
             name: "Pegasus_Cheese",
             type: "statbooster",
             target: Spdi,
-            effect: 2
+            effect: 2,
+            targetstr: "Spd"
         }
         const Nectar = {
             name: "Nectar",
             type: "statbooster",
             target: Lcki,
-            effect: 2
+            effect: 2,
+            targetstr: "Lck"
         }
         const Ambrosia = {
             name: "Ambrosia",
             type: "statbooster",
             target: Defi,
-            effect: 2
+            effect: 2,
+            targetstr: "Def"
         }
         const Talisman = {
             name: "Talisman",
             type: "statbooster",
             target: Resi,
-            effect: 2
+            effect: 2,
+            targetstr: "Res"
         }
         //Promo items
         const Orions_Bolt = {
@@ -274,41 +290,66 @@ on('chat:message', function(msg) {
         }
         itemlist = [Hearty_Cheese,Spicy_Chicken,Sweet_Honey,Fresh_Bread,Exotic_Spice,Candy_Die,Hot_Soup,Pure_Water,Vulnerary,Concoction,Elixir,Fruit_of_Life,Soma,Golden_Apple,Nethergranate,Pegasus_Cheese,Nectar,Ambrosia,Talisman,Orions_Bolt,Hero_Crest,Elysian_Whip,Guiding_Ring,Beastly_Claw,Ocean_Seal,Medal_of_Honor,Heart_Seal,Door_Key,Chest_Key,Lockpick,Red_Gem,Blue_Gem,White_Gem];
         //Actual scripts
-        //a-an message handling. Obviously, there are some exceptions because it's based on phonetic vowels, but whatever
+        //a-an message handling. Obviously, there are some exceptions because a/an is based on phonetic vowels, but whatever
+        let a_an = "";
         if (item.toLowerCase()[0] == "a"||item.toLowerCase()[0] == "e"||item.toLowerCase()[0] == "i"||item.toLowerCase()[0] == "o"||item.toLowerCase()[0] == "u"){
-            sendChat(who, '/me uses an ' + item);
+            a_an = "an"
         } else {
-            sendChat(who, '/me uses a ' + item)
+            a_an = "a"
         }
+        let Itemstr = '<p style = "margin-bottom: 0px;">' + user.get("name") + " uses " + a_an +  " " + item + "!</p>"
         for (var i in itemlist){
             if (itemlist[i].name == item){
                 j = itemlist[i]
                 log(j)
                 //item effects
                 if (j.type == "misc"){
-                    sendChat("System",j.desc)
+                    Itemstr += '<p style = "margin-bottom: 0px;">' + j.desc + '</p>'
                 }
                 if (j.type == "temp_statbooster"){
-                    j.target.set("current", Number(j.target.get("current")) + j.effect)
+                    j.target.setWithWorker({
+                        current: parseInt(j.target.get("current")) + j.effect
+                    });
+                    Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' temporarily increased by '+ j.effect +'!</p>'
                 }
                 if (j.type == "statbooster"){
-                    j.target.set("current", Number(j.target.get("current")) + j.effect)
+                    j.target.setWithWorker({
+                        current: parseInt(j.target.get("current")) + j.effect
+                    });
+                    Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' increased by '+ j.effect +'!</p>'
                 }
                 if (j.type == "healing"){
-                    HPcurrent.set("current", Number(HPcurrent.get("current")) + j.effect)
+                    HPcurrent.setWithWorker({
+                        current: parseInt(HPcurrent.get("current")) + j.effect
+                    });
+                    Itemstr += '<p style = "margin-bottom: 0px;">' + user.get("name") + ' is healed for '+ j.effect +' HP!</p>'
                 }
                 if (j.type == "seal"){
                     if (j.promo == true){
                         if (j.target.indexOf(Userclass.get("current")) != -1 ){
-                            sendChat("System", user.get("name") + " promotes with the " + j.name + "!")
+                            Itemstr += '<p style = "margin-bottom: 0px;">' + user.get("name") + " promotes with the " + j.name + "!</p>"
                         } else {
-                            sendChat("System", "Cannot promote!")
+                            Itemstr += '<p style = "margin-bottom: 0px;">Cannot promote! </p>'
                         }
                     } else {
-                        sendChat("System", user.get("name") + " changes class with a Heart Seal!")
+                        Itemstr += '<p style = "margin-bottom: 0px;">' + user.get("name") + " changes class with a Heart Seal! </p>";
                     }
                 }
             }
         }
+
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
+        var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+
+        sendChat(who, '<div ' + divstyle + '>' + //--
+            '<div ' + headstyle + '>Item</div>' + //--
+            '<div style = "margin: 0 auto; width: 80%; margin-top: 4px;">' + Itemstr + '</div>' + //--
+            '</div>'
+        );
     }
 });

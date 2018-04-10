@@ -49,6 +49,8 @@ on('chat:message', function(msg) {
         let CurrHPA = findObjs({ characterid: staffer.id, name: "HP_current"})[0];
         //Target stats for tasty statuses
         let CurrHPB = findObjs({ characterid: target.id, name: "HP_current"})[0];
+        let dispHPA = CurrHPA.get("current");
+        let dispHPB = CurrHPB.get("current")
         let MaxHPB = findObjs({ characterid: target.id, name: "HP_total"})[0];
         let StrB = findObjs({ characterid: target.id, name: "Str_total"})[0];
         let MagB = findObjs({ characterid: target.id, name: "Mag_total"})[0];
@@ -82,7 +84,7 @@ on('chat:message', function(msg) {
         let UsesA = findObjs({ characterid: staffer.id, name: "repeating_weapons_"+fIDA+"_Uses"},{ caseInsensitive: true })[0]; //assumes it exists, since that's a requirement for the thing to activate
         let diff = ManhDist(selectedToken, targetToken);
 
-        chatstr = "/me uses " + WNameA + "!"
+        chatstr = '<p style = "margin-bottom: 0px;">' + staffer.get("name") + " uses " + WNameA + "!</p>"
 
         const Heal = {
             name : "Heal",
@@ -512,9 +514,9 @@ on('chat:message', function(msg) {
                 }
 
                 if (obj.custom_string != "") {
-                    chatstr += '\n<b style = "color: #4055df;">' + obj.custom_string + "</b>\n"
+                    chatstr += '<p style = "margin-bottom: 0px;"><b style = "color: #4055df;">' + obj.custom_string + "</b></p>"
                 } else {
-                    chatstr += '\n<b style = "color: #4055df;">' + obj.name + " activated!</b>\n"
+                    chatstr += '<p style = "margin-bottom: 0px;"><b style = "color: #4055df;">' + obj.name + " activated!</b></p>"
                 }
             }
 
@@ -548,10 +550,13 @@ on('chat:message', function(msg) {
         SkillsA = temp;
         log(SkillsA);
 
+        let dispHealA = "--"
+        let dispHitA = (HitA - AvoB);
+
         const staveslist = [Heal,Mend,Physic,Recover,Fortify,Bloom_Festal,Sun_Festal,Wane_Festal,Moon_Festal,Great_Festal,Freeze,Enfeeble,Entrap,Rescue,Silence,Hexing_Rod];
         //Script stuff here
         if (WTypeA != "Staves/Rods"){
-            chatstr += "\n Weapon is not a staff!"
+            chatstr += '<p style = "margin-bottom: 0px;"> Weapon is not a staff!</p>'
         } else {
             for (var i in staveslist){
                 if (staveslist[i].name === WNameA){
@@ -561,12 +566,14 @@ on('chat:message', function(msg) {
                         if (j.type === "healing"){
                             //Set with workers in respect to total caps
                             HPVal = j.effect
+                            dispHealA = HPVal
                             for (var z in SkillsA){
                                 Skill(staffer, target, SkillsA[z], "staff")
                             }
                             CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal})
-                            chatstr += "\n" + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!"
+                            chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>"
                             UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1})
+                            dispHitA = "--"
                         }
                         if (j.type === "status"){
                             //Check for RNG
@@ -579,19 +586,62 @@ on('chat:message', function(msg) {
                                 log(j.status);
                                 targetToken.set(j.status);
                                 UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1})
-                                chatstr += "\n"+ j.chatmsg
+                                chatstr += '<p style = "margin-bottom: 0px;">'+ j.chatmsg + '</p>'
                             }
                             else {
-                                chatstr += "\n Staff misses!"
+                                chatstr += '<p style = "margin-bottom: 0px;"> Staff misses!</p>'
                             }
                         }
                     } else {
-                        chatstr += "\n Staff is not in range!"
+                        chatstr += '<p style = "margin-bottom: 0px;"> Staff is not in range!</p>'
                     }
                 }
             }
         }
-        sendChat(who, chatstr);
+
+
+
+
+        //adapted from Ciorstaidh's Faerun Calendar css
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
+        var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+        sendChat(who, '<div ' + divstyle + '>' + //--
+                '<div ' + headstyle + '>Staff</div>' + //--
+                '<div style = "margin: 0px auto; width: 100%; text-align: center;">' + //--
+                '<div ' + wrapperstyle +'>' + //--
+                    '<div ' + namestyle + '>'+ staffer.get("name") +'</div>' + //--
+                    '<div ' + statdiv +'>' + //--
+                        '<table>'+ //--
+                            '<tr><td ' + cellabel +'> HP </td> <td style = "padding: 2px;">' + dispHPA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Heal </td> <td style = "padding: 2px;">' + dispHealA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Hit% </td> <td style = "padding: 2px;">' + dispHitA + '</td></tr>' + //--
+                            '<tr><td ' + cellabel +'> Crit% </td> <td style = "padding: 2px;">' + "--" + '</td></tr>' + //--
+                        '</table>'+ //--
+                    '</div>' + //--
+                '</div>' + //--
+
+                '<div ' + wrapperstyle +'>' + //--
+                    '<div ' + namestyle + '>'+ targetToken.get("name") +'</div>' + //--
+                    '<div ' + statdiv +'>' + //--
+                        '<table>'+ //--
+                            '<tr><td style = "padding: 2px;">' + dispHPB + '</td><td ' + cellabel +'> HP </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + "--"  + '</td><td ' + cellabel +'> Heal </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + "--"  + '</td><td ' + cellabel +'> Hit% </td></tr>' + //--
+                            '<tr><td style = "padding: 2px;">' + "--" + '</td><td ' + cellabel +'> Crit% </td></tr>' + //--
+                        '</table>'+ //--
+                    '</div>' + //--
+                '</div>' + //--
+                '</div>' + //--
+
+                '<div style = "height: 1px; background-color: #353535; width: 70%; margin: 0 auto; margin-bottom: 4px;"></div>' + //--
+                '<div style = "margin: 0 auto; width: 70%;">' + chatstr + '</div>' + //--
+            '</div>'
+        );
 
     }
 });
