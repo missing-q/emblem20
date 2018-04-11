@@ -1,32 +1,22 @@
 html, body {
   height: 100%;
-  background: linear-gradient(#0E0b16, #121223);
   background-repeat: no-repeat;
-  color: #e7bfdd;
-}
-
-.link-wrapper {
-  position: relative;
-  display: block;
-  padding: 20px 0;
+  background-image: url("https://cdn.discordapp.com/attachments/340557696275054612/433687862169305098/image.jpg");
+  background-color: rgba(113,118,127,.8);
+  background-blend-mode: multiply;
+  background-attachment: fixed;
+  color: white;
 }
 #titlesplash {
-    height: 70vh;
-    padding: 0;
-    margin: 0;
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  height:110vh;
+  padding: 0;
+  margin: 0;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 }
-
-/*Palette:
-Black (main): #0e0b16
-White (text): #e7bfdd
-Navy (highight): #062f4f
-Red (highlight): #b82601
-*/
