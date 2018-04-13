@@ -21,3 +21,8 @@
     visibility: visible;
     word-wrap: break-word;
 }
+
+header img {
+    height: 10vh;
+    margin-top: -5vh;
+}
