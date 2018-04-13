@@ -1,3 +1,23 @@
-/*body {
-  background-color: red;
-}*/
+.circle .tooltip {
+    visibility: hidden;
+    width: 12vw;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6vw;
+    background-color: rgba(52, 27, 43, 0.8);
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+    font-size: 1.5vh;
+    margin-bottom: 5px;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.circle:hover .tooltip {
+    visibility: visible;
+    word-wrap: break-word;
+}
