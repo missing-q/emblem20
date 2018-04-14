@@ -1661,7 +1661,7 @@
 		text-align: center;
 	}
 
-		header.special:before, header.special:after {
+		header.special .divbar {
 			border-bottom: solid 1.5px;
 			border-top: solid 1.5px;
 			content: '';
@@ -1670,6 +1670,7 @@
 			position: absolute;
 			top: 1.75em;
 			width: 43%;
+			display:inline-block;
 		}
 
 		header.special:before {
@@ -1691,12 +1692,10 @@
 
 		header.special .icon {
 			cursor: default;
-			height: 7em;
 			left: 0;
 			position: absolute;
 			text-align: center;
 			top: 1em;
-			width: 100%;
 		}
 
 			header.special .icon:before {

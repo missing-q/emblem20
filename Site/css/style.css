@@ -12,8 +12,9 @@
     /* Position the tooltip text - see examples below! */
     position: absolute;
     z-index: 1;
-    font-size: 1.5vh;
+    font-size: 2vh;
     margin-bottom: 5px;
+    font-family: "Lato";
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
@@ -23,8 +24,12 @@
 }
 
 header .d20 {
-  height: 10vh;
-  width: 10vh;
+  height: 16%;
+  width: 4.5%;
+  right: 0px;
   background-image: url("images/d20.png");
   background-repeat: none;
+  margin: 0 auto;
+  display: inline-block;
+  opacity: .35
 }
