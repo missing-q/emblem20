@@ -22,7 +22,9 @@
     word-wrap: break-word;
 }
 
-header img {
-    height: 10vh;
-    margin-top: -5vh;
+header .d20 {
+  height: 10vh;
+  width: 10vh;
+  background-image: url("images/d20.png");
+  background-repeat: none;
 }
