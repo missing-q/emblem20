@@ -33,3 +33,36 @@ header .d20 {
   display: inline-block;
   opacity: .35
 }
+@media screen and (max-width: 890px){
+    header .d20 {
+        width: 6%;
+    }
+}
+@media screen and (max-width: 700px){
+    header .d20 {
+        width: 7%;
+    }
+}
+@media screen and (max-width: 640px){
+    header .d20 {
+        width: 8%;
+    }
+}
+@media screen and (max-width: 485px){
+    header .d20 {
+        width: 9%;
+        height: 12%;
+    }
+}
+@media screen and (max-width: 418px){
+    header .d20 {
+        width: 9%;
+        height: 10%;
+    }
+}
+@media screen and (max-width: 385px){
+    header .d20 {
+        width: 9%;
+        height: 9%;
+    }
+}
