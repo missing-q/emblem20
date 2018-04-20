@@ -49,6 +49,11 @@ Now that it's up on Roll20, you can easily add Emblem20 to your game! Be warned,
 
 `!skill @{selected|token_id} @{target|token_id}`
 
+**Battle-Forecast**
+
+`!forecast @{selected|token_id} @{target|token_id}`
+
+
 **Modify-Stats**\*
 
 `!stats @{selected|token_id} ?{Hit Modifier: @{selected|hitmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Crit Modifier: @{selected|critmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Avoid Modifier: @{selected|avomod} +|0|5|10|15|20|-20|-15|-10|-5} ?{Dodge Modifier: @{selected|ddgmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Damage Modifier: @{selected|dmgmod} + |0|1|2|3|4|-1|-2|-3|-4}`
