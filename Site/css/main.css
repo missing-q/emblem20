@@ -1,4 +1,4 @@
-@import url("font-awesome.min.css");
+
 @import url("https://fonts.googleapis.com/css?family=Lato:300,400,900");
 
 /*
@@ -2250,11 +2250,6 @@
 						text-transform: none !important;
 					}
 
-					#header nav ul li.submenu > a:before {
-						content: '\f107';
-						margin-right: 0.65em;
-					}
-
 				#header nav ul li.active > a, #header nav ul li:hover > a {
 					-moz-transition: all 0.2s ease-in-out;
 					-webkit-transition: all 0.2s ease-in-out;
@@ -2547,7 +2542,7 @@
 		/* Section/Article */
 
 			header.special {
-				padding-top: 5.5em;
+				padding-top: 1em;
 				margin-bottom: 4em;
 			}
 
