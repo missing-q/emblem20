@@ -66,3 +66,8 @@ header .d20 {
         height: 9%;
     }
 }
+
+.wrapper.style2.container.special-alt img {
+    max-width:100%;
+    max-height:100%;
+}
