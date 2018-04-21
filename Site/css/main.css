@@ -2862,7 +2862,6 @@
 					#navButton .toggle:before {
 						-moz-osx-font-smoothing: grayscale;
 						-webkit-font-smoothing: antialiased;
-						font-family: FontAwesome;
 						font-style: normal;
 						font-weight: normal;
 						text-transform: none !important;
@@ -2870,7 +2869,6 @@
 
 					#navButton .toggle:before {
 						color: #fff;
-						content: '\f0c9';
 						font-size: 1em;
 						height: 40px;
 						left: 10px;

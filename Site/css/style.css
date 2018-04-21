@@ -37,6 +37,12 @@ header .d20 {
     header .d20 {
         width: 6%;
     }
+    .linkch {
+      width: 100%;
+    }
+    .tutorialimg {
+      width: 100%;
+    }
 }
 @media screen and (max-width: 700px){
     header .d20 {
@@ -106,4 +112,9 @@ header .d20 {
   white-space:normal;
   margin-bottom: 1em;
   font-size: 85%;
+}
+@media screen and (max-width: 890px){
+    .image.featured.tutorialimg {
+      width: 100%;
+    }
 }
