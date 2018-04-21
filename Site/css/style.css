@@ -80,6 +80,30 @@ header .d20 {
   margin-bottom: 0px;
 }
 .image.featured.tutorialimg {
-  width: 70%;
+  width: 60%;
   margin-top: 2em;
+}
+#nosb {
+  padding-top: 1em;
+}
+.tutorial i {
+  font-style: italic;
+}
+.tutorial .fas, .tutorial .far{
+  font-style: normal;
+}
+.codelabel {
+  font-family:monospace;
+  background-color: #f3f6fa;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+.content pre {
+  font-family:monospace;
+  background-color: #f3f6fa;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  white-space:normal;
+  margin-bottom: 1em;
+  font-size: 85%;
 }
