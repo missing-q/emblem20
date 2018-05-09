@@ -498,6 +498,7 @@ on('chat:message', function(msg) {
         }
         let EXPAmod = (10 + (leveldiff*3));
         let WEXPA = 2;
+        let none; //just in case something accidentally gets parsed
 
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
@@ -540,7 +541,11 @@ on('chat:message', function(msg) {
                 log("You probably don't have the right weapons")
                 return;
             }
+            log("userid is" + userid)
+            log("targetid is " + targetid)
             log("DamageU is" + Dmg_U);
+            log(CurrHPU);
+            log(CurrHPE);
             //stat definitions
             HPU = findObjs({
                 characterid: userid,
@@ -606,6 +611,8 @@ on('chat:message', function(msg) {
                 characterid: targetid,
                 name: "Res_bd"
             })[0];
+
+            log(ResE);
 
             //nice stat-variables for use in expressions and such
             let HP_StatU = getAttrByName(userid, 'hp_total');
@@ -678,33 +685,44 @@ on('chat:message', function(msg) {
                 log("HealmodU is" + HealmodU)
 
                 let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
-
+                log(obj.u_stat_target)
+                log(obj.e_stat_target)
                 //determining the actual stat target
                 if (obj.u_stat_target || obj.e_stat_target != "none") {
                     for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r]) {
+                        if (obj.u_stat_target == statnames[r] + "U") {
                             StattargetU = eval(statnames[r] + "U");
                         }
-                        if (obj.e_stat_target == statnames[r]) {
-                            StattargetE = eval(statnames[r] + "U");
+                        if (obj.e_stat_target == statnames[r] + "E") {
+                            StattargetE = eval(statnames[r] + "E");
                         }
                     }
                 }
-                let StattargetmodU = eval(obj.u_stat_targetmod);
-                let StattargetmodE = eval(obj.e_stat_targetmod);
-
-                if (obj.u_stat_target != "none"){
-                    StattargetU.setWithWorker({
-                        current: Number(StattargetU.get("current")) + Number(StattargetmodU)
-                    });
-                    log("Set targeted stat to "+ StattargetU.get("current"));
+                //for current HP-affecting skills
+                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
+                    StattargetU = eval(obj.u_stat_target)
+                }
+                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                    StattargetE = eval(obj.e_stat_target);
                 }
 
-                if (obj.e_stat_target != "none"){
-                    StattargetE.setWithWorker({
-                        current: Number(StattargetE.get("current")) + Number(StattargetmodE)
+                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
+                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                log(StattargetE);
+                log(StattargetmodE);
+
+                if (obj.u_stat_target != "none" && StattargetU != undefined){
+                    StattargetU.setWithWorker({
+                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
                     });
-                    log("Set targeted stat to "+ StattargetE.get("current"));
+                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                }
+
+                if (obj.e_stat_target != "none" && StattargetE != undefined){
+                    StattargetE.setWithWorker({
+                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
+                    });
+                    log("Set E-targeted stat to "+ StattargetE.get("current"));
                 }
 
                 if (userid == attacker.id) {
@@ -920,7 +938,7 @@ on('chat:message', function(msg) {
         for (i in SkillsB){
             Skill(defender.id, attacker.id, SkillsB[i], "before");
         }
-
+        let diff = parseInt(ManhDist(selectedToken, targetToken));
         let dispHPA = HPA;
         let dispHPB = HPB;
         let dispDmgA = DmgA;
@@ -935,6 +953,14 @@ on('chat:message', function(msg) {
         }
         if (effectiveB){
             dispDmgB = '<span style = "color:green;">' + dispDmgB + '</span>'
+        }
+
+        if (!(diff >= Range1A) && (diff <= Range2A)){
+            CanAttackA = false;
+        }
+
+        if (!(diff >= Range1B) && (diff <= Range2B)){
+            CanAttackB = false;
         }
 
         if (!CanAttackA){
@@ -965,7 +991,6 @@ on('chat:message', function(msg) {
 
         //Actual battle script
         //Check if attacker's attack hits/is in range
-        let diff = parseInt(ManhDist(selectedToken, targetToken));
         log(diff + " tiles away!");
         let css = {
             attack: 'style = "color: #353535; border = 1px solid #353535;"'
