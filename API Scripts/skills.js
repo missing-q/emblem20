@@ -298,33 +298,44 @@ on('chat:message', function(msg) {
                 log("HealmodU is" + HealmodU)
 
                 let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
-
+                log(obj.u_stat_target)
+                log(obj.e_stat_target)
                 //determining the actual stat target
                 if (obj.u_stat_target || obj.e_stat_target != "none") {
                     for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r]) {
+                        if (obj.u_stat_target == statnames[r] + "U") {
                             StattargetU = eval(statnames[r] + "U");
                         }
-                        if (obj.e_stat_target == statnames[r]) {
-                            StattargetE = eval(statnames[r] + "U");
+                        if (obj.e_stat_target == statnames[r] + "E") {
+                            StattargetE = eval(statnames[r] + "E");
                         }
                     }
                 }
-                let StattargetmodU = eval(obj.u_stat_targetmod);
-                let StattargetmodE = eval(obj.e_stat_targetmod);
-
-                if (obj.u_stat_target != "none") {
-                    StattargetU.setWithWorker({
-                        current: Number(StattargetU.get("current")) + Number(StattargetmodU)
-                    });
-                    log("Set targeted stat to " + StattargetU.get("current"));
+                //for current HP-affecting skills
+                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
+                    StattargetU = eval(obj.u_stat_target)
+                }
+                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                    StattargetE = eval(obj.e_stat_target);
                 }
 
-                if (obj.e_stat_target != "none") {
-                    StattargetE.setWithWorker({
-                        current: Number(StattargetE.get("current")) + Number(StattargetmodE)
+                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
+                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                log(StattargetE);
+                log(StattargetmodE);
+
+                if (obj.u_stat_target != "none" && StattargetU != undefined){
+                    StattargetU.setWithWorker({
+                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
                     });
-                    log("Set targeted stat to " + StattargetE.get("current"));
+                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                }
+
+                if (obj.e_stat_target != "none" && StattargetE != undefined){
+                    StattargetE.setWithWorker({
+                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
+                    });
+                    log("Set E-targeted stat to "+ StattargetE.get("current"));
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
