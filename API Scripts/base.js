@@ -7,7 +7,7 @@ function ManhDist(token1,token2) { //Manhattan Distance in tiles between two uni
     let BYCoord = token2.get("top");
     let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
     return (diff/70)
-};
+}
 
 on('chat:message', function(msg) {
     if (msg.type != 'api') return;
