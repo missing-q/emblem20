@@ -95,6 +95,8 @@ on('chat:message', function(msg) {
         let IsPromoB = getAttrByName(defender.id, 'isPromo');
         let UACounterA = getAttrByName(attacker.id, 'UACounter');
         let UACounterB = getAttrByName(defender.id, 'UACounter');
+        let AllegianceA = getAttrByName(attacker.id, 'all');
+        let AllegianceB = getAttrByName(defender.id, 'all');
         let HPA = Number(getAttrByName(attacker.id, 'hp_current'));
         let HPB = Number(getAttrByName(defender.id, 'hp_current'));
         let StrA = Number(getAttrByName(attacker.id, 'str_total'));
@@ -225,6 +227,7 @@ on('chat:message', function(msg) {
         let hasCritB = false;
         let CanAttackA = true;
         let CanAttackB = true;
+        let AttackingAlly = false;
 
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         let SkillsB = findObjs({ characterid: defender.id, type: "ability"});
@@ -267,7 +270,12 @@ on('chat:message', function(msg) {
         if ((UsesB == undefined) && (UACounterB == false)){
             CanAttackB = false
         }
-
+        //allegiance checking- reds aren't included so you can have multiple red factions attack each other.
+        if ((AllegianceA == "Player" && AllegianceB == "Player") || (AllegianceA == "Player" && AllegianceB == "Ally") || (AllegianceA == "Ally" && AllegianceB == "Player") || (AllegianceA == "Ally" && AllegianceB == "Ally")){
+            CanAttackA = false;
+            CanAttackB = false;
+            AttackingAlly = true;
+        }
         let effectiveA;
         let effectiveB;
         //Check for weapon effectiveness- HAS TO BE BEFORE stat targeting calcs so it can factor in Mt.
@@ -418,38 +426,6 @@ on('chat:message', function(msg) {
         }
         log(SkillsB)
         //Skills system! :^)
-        /*Here is an example of Speedtaker so I don't have to keep checking back to see what I used:
-        {
-        "name": "Speedtaker",
-	    "triggertime": "before",
-	    "u_wepreq": ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Anima Magic","Light Magic","Dark Magic","Stones/Other","Staves/Rods"],
-	    "e_wepreq": ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Anima Magic","Light Magic","Dark Magic","Stones/Other","Staves/Rods"],
-	    "whotriggered": "either",
-	    "radius_effect": "none",
-	    "physmagcond": false,
-        "killcond": true,
-        "rng": "any",
-        "rngmod": "none",
-   	    "u_healfactor": 0,
-	    "e_healfactor": 0,
-	    "u_hitmod": 0,
-    	"e_hitmod": 0,
-    	"u_critmod": 0,
-    	"e_critmod": 0,
-    	"u_avomod": 0,
-    	"e_avomod": 0,
-    	"u_ddgmod": 0,
-    	"e_ddgmod": 0,
-    	"physmag": false,
-       	"u_damagemod": "0",
-        "e_damagemod": "0",
-    	"u_stat_target": "Spd",
-    	"e_stat_target": "none",
-    	"u_stat_targetmod": "2",
-    	"e_stat_targetmod": 0,
-    	"children_skills": []
-        }
-        */
         //stat initializations- technically, these do nothing in the main function because ~block scope~
         let user;
         let RNGSklU;
@@ -492,11 +468,27 @@ on('chat:message', function(msg) {
         let StattargetE;
         let Dmg_U;
         let Dmg_E;
-        let leveldiff = InLvB-InLvA;
-        if (leveldiff < 0){
-            leveldiff = 1;
+        //exp
+        if (IsPromoA == true){
+            InLvA += 20;
         }
-        let EXPAmod = (10 + (leveldiff*3));
+        if (IsPromoB == true){
+            InLvB += 20;
+        }
+        log("B level is" + InLvB)
+        log("A level is" + InLvA)
+        log(InLvB - InLvA)
+        let leveldiff = InLvB - InLvA;
+        log("leveldiff is " + leveldiff)
+        let EXPAmod;
+        if (leveldiff >= 0){
+            EXPAmod = parseInt((31 + leveldiff)/3);
+        } else if (leveldiff == -1){
+            EXPAmod = 10;
+        } else {
+            EXPAmod = parseInt(Math.max((33 + leveldiff)/3, 1));
+        }
+        log(EXPAmod)
         let WEXPA = 2;
         let none; //just in case something accidentally gets parsed
 
@@ -539,6 +531,10 @@ on('chat:message', function(msg) {
 
             } else {
                 log("You probably don't have the right weapons")
+                return;
+            }
+            //attacking ally check; should check for true on combat implementation & false on all othera
+            if (AttackingAlly == true){
                 return;
             }
             log("userid is" + userid)
@@ -757,6 +753,7 @@ on('chat:message', function(msg) {
                     HPA = parseInt(HPA) + HealmodE;
                 }
                 log(HPA)
+                log("wexp is "+ WEXPA);
 
                 if (obj.radius != 0){
                     //tortured screaming
@@ -1732,14 +1729,9 @@ on('chat:message', function(msg) {
                 '<div style = "margin: 0 auto; width: 70%;">' + Chatstr + '</div>' + //--
             '</div>'
         );
-        if (IsPromoA == true){
-            InLvA += 20;
-        }
-        if (IsPromoB == true){
-            InLvB += 20;
-        }
         //Calculate EXP; commented out for the test
         EXPA += EXPAmod
+        log(EXPAmod)
         CurrEXP.set("current",EXPA);
         log(EXPA)
         if (CurrEXP.get("current") >= 100){
