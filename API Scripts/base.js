@@ -6,7 +6,7 @@ function ManhDist(token1,token2) { //Manhattan Distance in tiles between two uni
     let BXCoord = token2.get("left");
     let BYCoord = token2.get("top");
     let diff = parseInt((Math.abs(AXCoord - BXCoord))+(Math.abs(AYCoord - BYCoord)));
-    return (diff/70)
+    return (diff/70);
 }
 
 on('chat:message', function(msg) {
@@ -17,9 +17,9 @@ on('chat:message', function(msg) {
     var turncounter;
     if (Campaign().get("turnorder") == "") turnorder = [];
     else turnorder = JSON.parse(Campaign().get("turnorder"));
-    for (i in turnorder){
+    for (var i in turnorder){
         if (turnorder[i].custom == "Turn Counter"){
-            turncounter = turnorder[i]
+            turncounter = turnorder[i];
         }
     }
 
@@ -27,7 +27,7 @@ on('chat:message', function(msg) {
     if (turncounter != undefined){
         n = turncounter.pr;
     } else {
-        n = 0
+        n = 0;
     }
 
     //log(turncounter)
@@ -95,6 +95,8 @@ on('chat:message', function(msg) {
         let IsPromoB = getAttrByName(defender.id, 'isPromo');
         let UACounterA = getAttrByName(attacker.id, 'UACounter');
         let UACounterB = getAttrByName(defender.id, 'UACounter');
+        let AllegianceA = getAttrByName(attacker.id, 'all');
+        let AllegianceB = getAttrByName(defender.id, 'all');
         let HPA = Number(getAttrByName(attacker.id, 'hp_current'));
         let HPB = Number(getAttrByName(defender.id, 'hp_current'));
         let StrA = Number(getAttrByName(attacker.id, 'str_total'));
@@ -127,16 +129,16 @@ on('chat:message', function(msg) {
         let Range2B = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Range2')) || 1;
         let WRankA = getAttrByName(attacker.id, 'repeating_weapons_$0_WRank') || "E";
         let WRankB = getAttrByName(defender.id, 'repeating_weapons_$0_WRank') || "E";
-        let fIDA = getAttrByName(attacker.id, 'fid')|| ""
-        let fIDB = getAttrByName(defender.id, 'fid')|| ""
-        log(fIDA)
-        log(fIDB)
+        let fIDA = getAttrByName(attacker.id, 'fid')|| "";
+        let fIDB = getAttrByName(defender.id, 'fid')|| "";
+        log(fIDA);
+        log(fIDB);
         let UsesA;
         let UsesB;
         let AOEA = getAttrByName(attacker.id, "repeating_weapons_$0_AOE");
         let AOEB = getAttrByName(defender.id, "repeating_weapons_$0_AOE");
-        log("AOE is " + AOEA)
-        log("AOE is " + AOEB)
+        log("AOE is " + AOEA);
+        log("AOE is " + AOEB);
         //check for no rows
         if (fIDA == ""){
             UsesA = 68932;
@@ -225,6 +227,7 @@ on('chat:message', function(msg) {
         let hasCritB = false;
         let CanAttackA = true;
         let CanAttackB = true;
+        let AttackingAlly = false;
 
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         let SkillsB = findObjs({ characterid: defender.id, type: "ability"});
@@ -262,12 +265,17 @@ on('chat:message', function(msg) {
 
         //unarmed counter checking
         if ((UsesA == undefined) && (UACounterA == false)){
-            CanAttackA = false
+            CanAttackA = false;
         }
         if ((UsesB == undefined) && (UACounterB == false)){
-            CanAttackB = false
+            CanAttackB = false;
         }
-
+        //allegiance checking- reds aren't included so you can have multiple red factions attack each other.
+        if ((AllegianceA == "Player" && AllegianceB == "Player") || (AllegianceA == "Player" && AllegianceB == "Ally") || (AllegianceA == "Ally" && AllegianceB == "Player") || (AllegianceA == "Ally" && AllegianceB == "Ally")){
+            CanAttackA = false;
+            CanAttackB = false;
+            AttackingAlly = true;
+        }
         let effectiveA;
         let effectiveB;
         //Check for weapon effectiveness- HAS TO BE BEFORE stat targeting calcs so it can factor in Mt.
@@ -304,7 +312,7 @@ on('chat:message', function(msg) {
         DmgA += DmgmodA;
         //dark magic vs. tome bonuses
         if ((WTypeA == "Dark Magic") && (MagWeps.includes(WTypeB))){
-            DmgA += 4
+            DmgA += 4;
         }
 
         log(DmgtypeA);
@@ -326,9 +334,9 @@ on('chat:message', function(msg) {
         if (DmgB < 0){
             DmgB = 0;
         }
-        DmgB += DmgmodB
+        DmgB += DmgmodB;
         if ((WTypeB == "Dark Magic") && (MagWeps.includes(WTypeA))){
-            DmgB += 4
+            DmgB += 4;
         }
         //check for doubling/braves
         if ( (SpdA - WtA) - (SpdB - WtB) >= 5 ||  WNameA.toLowerCase().includes("brave")){
@@ -339,7 +347,7 @@ on('chat:message', function(msg) {
                 log("Attacker can quad!");
             }
         }
-        log("AS is " + ((SpdA - WtA) - (SpdB - WtB)))
+        log("AS is " + ((SpdA - WtA) - (SpdB - WtB)));
         if ( (SpdB - WtB) - (SpdA - WtA) >= 5 ||  WNameB.toLowerCase().includes("brave")){
             DoubleB = true;
             log("Defender can double!");
@@ -349,6 +357,13 @@ on('chat:message', function(msg) {
             }
         }
 
+        //death check
+        if (HPA <= 0){
+            CanAttackA = false;
+        }
+        if (HPB <= 0){
+            CanAttackB = false;
+        }
         //Check for WTA
         let WIndexA = WepTypes.indexOf(WTypeA)+ 1;
         let WIndexB = WepTypes.indexOf(WTypeB)+ 1;
@@ -405,51 +420,19 @@ on('chat:message', function(msg) {
         for (var i in SkillsA){
             SkillsA[i] = SkillsA[i].get("action");
             if (SkillsA[i] != ""){
-                SkillsA[i] = JSON.parse(SkillsA[i])
+                SkillsA[i] = JSON.parse(SkillsA[i]);
             }
         }
-        log(SkillsA)
+        log(SkillsA);
 
         for (var i in SkillsB){
             SkillsB[i] = SkillsB[i].get("action");
             if (SkillsB[i] != ""){
-                SkillsB[i] = JSON.parse(SkillsB[i])
+                SkillsB[i] = JSON.parse(SkillsB[i]);
             }
         }
-        log(SkillsB)
+        log(SkillsB);
         //Skills system! :^)
-        /*Here is an example of Speedtaker so I don't have to keep checking back to see what I used:
-        {
-        "name": "Speedtaker",
-	    "triggertime": "before",
-	    "u_wepreq": ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Anima Magic","Light Magic","Dark Magic","Stones/Other","Staves/Rods"],
-	    "e_wepreq": ["Sword/Katana","Lance/Nagin.","Axe/Club","Bow/Yumi","Dagger/Shurik.","Firearm/Taneg.","Anima Magic","Light Magic","Dark Magic","Stones/Other","Staves/Rods"],
-	    "whotriggered": "either",
-	    "radius_effect": "none",
-	    "physmagcond": false,
-        "killcond": true,
-        "rng": "any",
-        "rngmod": "none",
-   	    "u_healfactor": 0,
-	    "e_healfactor": 0,
-	    "u_hitmod": 0,
-    	"e_hitmod": 0,
-    	"u_critmod": 0,
-    	"e_critmod": 0,
-    	"u_avomod": 0,
-    	"e_avomod": 0,
-    	"u_ddgmod": 0,
-    	"e_ddgmod": 0,
-    	"physmag": false,
-       	"u_damagemod": "0",
-        "e_damagemod": "0",
-    	"u_stat_target": "Spd",
-    	"e_stat_target": "none",
-    	"u_stat_targetmod": "2",
-    	"e_stat_targetmod": 0,
-    	"children_skills": []
-        }
-        */
         //stat initializations- technically, these do nothing in the main function because ~block scope~
         let user;
         let RNGSklU;
@@ -492,21 +475,37 @@ on('chat:message', function(msg) {
         let StattargetE;
         let Dmg_U;
         let Dmg_E;
-        let leveldiff = InLvB-InLvA;
-        if (leveldiff < 0){
-            leveldiff = 1;
+        //exp
+        if (IsPromoA == true){
+            InLvA += 20;
         }
-        let EXPAmod = (10 + (leveldiff*3));
+        if (IsPromoB == true){
+            InLvB += 20;
+        }
+        log("B level is" + InLvB);
+        log("A level is" + InLvA);
+        log(InLvB - InLvA);
+        let leveldiff = InLvB - InLvA;
+        log("leveldiff is " + leveldiff);
+        let EXPAmod;
+        if (leveldiff >= 0){
+            EXPAmod = parseInt((31 + leveldiff)/3);
+        } else if (leveldiff == -1){
+            EXPAmod = 10;
+        } else {
+            EXPAmod = parseInt(Math.max((33 + leveldiff)/3, 1));
+        }
+        log(EXPAmod);
         let WEXPA = 2;
         let none; //just in case something accidentally gets parsed
 
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
-            log("obj is not an object :(")
+            log("obj is not an object :(");
             return;
         }
         if ((triggertime == obj.triggertime) && (((obj.whotriggered == "attacker") && (userid == attacker.id)) || ((obj.whotriggered == "defender") && (userid == defender.id)) || (obj.whotriggered == "either"))) {
-            log("Okay, first barrier passed")
+            log("Okay, first barrier passed");
             if ((userid == attacker.id) && (obj.u_wepreq.indexOf(WTypeA) != -1) && (obj.e_wepreq.indexOf(WTypeB) != -1)) {
                 //obj.u_wepreq is a list of weapon types (to account for Aegis/Pavise & other similar skills)
                 //just change "any" to a list of all weapon types, I guess
@@ -525,7 +524,7 @@ on('chat:message', function(msg) {
 
             } else if ((userid == defender.id) && (obj.u_wepreq.indexOf(WTypeB) != -1) && (obj.e_wepreq.indexOf(WTypeA) != -1)) {
                 user = "defender";
-                log("Skill user is defender")
+                log("Skill user is defender");
                 RNGSklU = SklB;
                 RNGLckU = LckB;
                 CurrHPU = CurrHPB;
@@ -538,11 +537,15 @@ on('chat:message', function(msg) {
                 Dmg_E = DmgA;
 
             } else {
-                log("You probably don't have the right weapons")
+                log("You probably don't have the right weapons");
                 return;
             }
-            log("userid is" + userid)
-            log("targetid is " + targetid)
+            //attacking ally check; should check for true on combat implementation & false on all othera
+            if (AttackingAlly == true){
+                return;
+            }
+            log("userid is" + userid);
+            log("targetid is " + targetid);
             log("DamageU is" + Dmg_U);
             log(CurrHPU);
             log(CurrHPE);
@@ -647,7 +650,7 @@ on('chat:message', function(msg) {
             if ((obj.turncond != "none") && (eval(obj.turncond) != true)){
                 return;
             }
-            log(obj.rng)
+            log(obj.rng);
 
             //actual skill function
             function skillMain(){
@@ -655,38 +658,38 @@ on('chat:message', function(msg) {
                 if (DmgtypeE == "Physical" || DmgtypeE == "Firearm") {
                     PhysmagE = getAttrByName(targetid, "str_total");
                     PhysmaginvE = getAttrByName(targetid, "mag_total"); //inv for stuff like Ignis
-                    log(targetid)
+                    log(targetid);
                 } else {
                     PhysmagE = getAttrByName(targetid, "mag_total");
                     PhysmaginvE = getAttrByName(targetid, "str_total");
                 } //I would add a def/res parameter, but I'm just going to be lazy and use the defense AND resistance definition for Luna.
-                log("PhysmagE is " + PhysmagE)
+                log("PhysmagE is " + PhysmagE);
 
                 //PhysmagU
                 if (DmgtypeU == "Physical" || DmgtypeU == "Firearm") {
                     PhysmagU = getAttrByName(userid, "str_total");
                     PhysmaginvU = getAttrByName(userid, "mag_total");
-                    log(targetid)
+                    log(targetid);
                 } else {
                     PhysmagU = getAttrByName(userid, "mag_total");
                     PhysmaginvU = getAttrByName(userid, "str_total");
                 }
-                log("PhysmagU is " + PhysmagU)
+                log("PhysmagU is " + PhysmagU);
 
 
                 /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and
                 usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
                 so I think it should be alright. Oh well!*/
                 let DamagemodU = eval(obj.u_damagemod);
-                log("Damage mod is " + DamagemodU)
+                log("Damage mod is " + DamagemodU);
                 let DamagemodE = eval(obj.e_damagemod);
                 let HealmodU = parseInt(eval(obj.u_healfactor));
                 let HealmodE = parseInt(eval(obj.e_healfactor));
-                log("HealmodU is" + HealmodU)
+                log("HealmodU is" + HealmodU);
 
                 let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
-                log(obj.u_stat_target)
-                log(obj.e_stat_target)
+                log(obj.u_stat_target);
+                log(obj.e_stat_target);
                 //determining the actual stat target
                 if (obj.u_stat_target || obj.e_stat_target != "none") {
                     for (var r in statnames) {
@@ -726,9 +729,9 @@ on('chat:message', function(msg) {
                 }
 
                 if (userid == attacker.id) {
-                    log("Damage before is " + DmgA)
+                    log("Damage before is " + DmgA);
                     DmgA += DamagemodU;
-                    log("Damage after is " + DmgA)
+                    log("Damage after is " + DmgA);
                     DmgB += DamagemodE;
                     HitA += obj.u_hitmod;
                     HitB += obj.e_hitmod;
@@ -741,7 +744,7 @@ on('chat:message', function(msg) {
                     HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
                     HPB = parseInt(HPB) + HealmodE;
                     EXPAmod *= obj.expmod_u;
-                    WEXPA *= obj.wexpmod_u
+                    WEXPA *= obj.wexpmod_u;
                 } else {
                     DmgB += DamagemodU;
                     DmgA += DamagemodE;
@@ -756,7 +759,8 @@ on('chat:message', function(msg) {
                     HPB = parseInt(HPB) + HealmodU;
                     HPA = parseInt(HPA) + HealmodE;
                 }
-                log(HPA)
+                log(HPA);
+                log("wexp is "+ WEXPA);
 
                 if (obj.radius != 0){
                     //tortured screaming
@@ -764,11 +768,11 @@ on('chat:message', function(msg) {
                         if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken,token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
                         else return true;
                     });
-                    log("Tokens in radius are: ")
+                    log("Tokens in radius are: ");
                     for (var i in tokenInRadius){
-                        log(tokenInRadius[i])
+                        log(tokenInRadius[i]);
                         //stat targets
-                        let char = tokenInRadius[i].get("represents")
+                        let char = tokenInRadius[i].get("represents");
                         let HPcurrC = findObjs({ characterid: char, name: "HP_current"})[0];
                         let StrC = findObjs({ characterid: char, name: "Str_bd"})[0];
                         let MagC = findObjs({ characterid: char, name: "Mag_bd"})[0];
@@ -797,20 +801,20 @@ on('chat:message', function(msg) {
                         let DdgStat = getAttrByName(char, 'Ddg');
 
                         effect = eval(obj.radius_effect); //effect MUST be an array!!!
-                        rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]))
+                        rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]));
 
-                        log(effect[0].get("current"))
+                        log(effect[0].get("current"));
                         effect[0].setWithWorker({
                             current: rad_effect
                         });
-                        log(effect[0].get("current"))
+                        log(effect[0].get("current"));
 
                         if ((effect[0] == HPcurrC) && (char == attacker.id)){
-                            HPA += parseInt(effect[1])
+                            HPA += parseInt(effect[1]);
                         }
 
                         if ((effect[0] == HPcurrC) && (char == defender.id)){
-                            HPB += parseInt(effect[1])
+                            HPB += parseInt(effect[1]);
                         }
                     }
                 }
@@ -887,9 +891,9 @@ on('chat:message', function(msg) {
                     }
                 }
                 if (obj.custom_string != ""){
-                    Chatstr += '<p><b style = "color: #4055df;">' + obj.custom_string + "</b></p>"
+                    Chatstr += '<p><b style = "color: #4055df;">' + obj.custom_string + "</b></p>";
                 } else {
-                    Chatstr += '<p><b style = "color: #4055df;">' + obj.name + " activated!</b></p>"
+                    Chatstr += '<p><b style = "color: #4055df;">' + obj.name + " activated!</b></p>";
                 }
             }
 
@@ -914,12 +918,12 @@ on('chat:message', function(msg) {
                 if (randomInteger(100) < (rng * obj.rngmod)) {
                     skillMain();
                 } else {
-                    log("RIP RNG")
+                    log("RIP RNG");
                     return;
                 }
 
             } else { //Plain ol' skill trigger
-                log("Regular skillmain")
+                log("Regular skillmain");
                 skillMain();
             }
 
@@ -929,7 +933,7 @@ on('chat:message', function(msg) {
             log("Userid is" + userid);
             log("Whotriggered is " + obj.whotriggered);
             return;
-        }}; //I know it looks weird, but don't touch this!
+        }} //I know it looks weird, but don't touch this!
 
         //before triggers
         for (i in SkillsA){
@@ -943,50 +947,52 @@ on('chat:message', function(msg) {
         let dispHPB = HPB;
         let dispDmgA = DmgA;
         let dispDmgB = DmgB;
-        let dispHitA = HitA - AvoB
-        let dispHitB = HitB - AvoA
+        let dispHitA = HitA - AvoB;
+        let dispHitB = HitB - AvoA;
         let dispCritA = CritA;
         let dispCritB = CritB;
 
         if (effectiveA){
-            dispDmgA = '<span style = "color:green;">' + dispDmgA + '</span>'
+            dispDmgA = '<span style = "color:green;">' + dispDmgA + '</span>';
         }
         if (effectiveB){
-            dispDmgB = '<span style = "color:green;">' + dispDmgB + '</span>'
+            dispDmgB = '<span style = "color:green;">' + dispDmgB + '</span>';
         }
 
         if (!((diff >= Range1A) && (diff <= Range2A))){
             CanAttackA = false;
+            log("Attacker is out of range!")
         }
 
         if (!((diff >= Range1B) && (diff <= Range2B))){
             CanAttackB = false;
+            log("Defender is out of range!")
         }
 
         if (!CanAttackA){
-            dispDmgA = "--"
+            dispDmgA = "--";
             dispHitA = "--";
-            dispCritA = "--"
+            dispCritA = "--";
         }
         if (!CanAttackB){
-            dispDmgB = "--"
+            dispDmgB = "--";
             dispHitB = "--";
-            dispCritB = "--"
+            dispCritB = "--";
         }
 
         if (dispHitA > 100){
-            dispHitA = 100
+            dispHitA = 100;
         }
 
         if (dispHitB > 100){
-            dispHitB = 100
+            dispHitB = 100;
         }
         if (dispCritA > 100){
-            dispCritA = 100
+            dispCritA = 100;
         }
 
         if (dispCritB > 100){
-            dispCritB = 100
+            dispCritB = 100;
         }
 
         //Actual battle script
@@ -1001,7 +1007,7 @@ on('chat:message', function(msg) {
         log(diff + " " + Range1B);
         if (CanAttackA == true) {
             if ((diff >= Range1A) && (diff <= Range2A)){
-                log(Range1A + "-"+ Range2A)
+                log(Range1A + "-"+ Range2A);
                 diffcheckA = true;
                 if (randomInteger(100) < (HitA - AvoB)){
                     //Check if attack crits
@@ -1040,7 +1046,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1074,7 +1080,7 @@ on('chat:message', function(msg) {
                             HPchar.setWithWorker({
                                 current: HPchar.get("current") - prov_DmgA
                             });
-                            Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " damage!</p>";
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " AOE damage!</p>";
                         }
                     }
                 }
@@ -1084,6 +1090,10 @@ on('chat:message', function(msg) {
             }
         } else {
             Chatstr += '<p style = "margin-bottom: 0px;">' + AName +" cannot attack!</p>";
+        }
+
+        if (HPB <= 0){
+            CanAttackB = false;
         }
 
         if (CanAttackB == true){
@@ -1124,7 +1134,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1170,6 +1180,10 @@ on('chat:message', function(msg) {
             Chatstr += '<p style = "margin-bottom: 0px;">' + DName +" cannot attack!</p>";
         }
 
+        if (HPA <= 0){
+            CanAttackA = false;
+        }
+
         //Attacker doubles; I don't think I should need to do usability checking for doubleattacking since it's checked within the battle calc
         if ((DoubleA === true) && (CanAttackA == true) && (diffcheckA == true)){
             //quadattacks
@@ -1177,7 +1191,7 @@ on('chat:message', function(msg) {
                 //Check if attack crits
                 if (randomInteger(100) < (CritA - DdgB)){
                     DmgA *= 3;
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
                     hasCritA = true;
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
@@ -1207,7 +1221,7 @@ on('chat:message', function(msg) {
             //radius
             if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1252,10 +1266,10 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
                         hasCritA = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
                     }
 
                     for (i in SkillsA){
@@ -1282,7 +1296,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1326,7 +1340,7 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
                         hasCritA = true;
                     } else {
                         Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
@@ -1357,7 +1371,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1399,6 +1413,10 @@ on('chat:message', function(msg) {
             }
         }
 
+        if (HPB <= 0){
+            CanAttackB = false;
+        }
+
         //Defender doubles
         if ((DoubleB === true) && (CanAttackB == true) && (diffcheckB == true)){
             //doubleattacks
@@ -1406,10 +1424,10 @@ on('chat:message', function(msg) {
                 //Check if attack crits
                 if (randomInteger(100) < (CritB - DdgA)){
                     DmgB *= 3;
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
                     hasCritB = true;
                 } else {
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
                 }
 
                 for (i in SkillsB){
@@ -1433,7 +1451,7 @@ on('chat:message', function(msg) {
             //radius
             if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1478,10 +1496,10 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
                         hasCritB = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
                     }
 
                     for (i in SkillsB){
@@ -1505,7 +1523,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1549,10 +1567,10 @@ on('chat:message', function(msg) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
                         hasCritB = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>"
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
                     }
 
                     for (i in SkillsB){
@@ -1565,7 +1583,7 @@ on('chat:message', function(msg) {
                     //radius
                     if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1618,7 +1636,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEB != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1672,34 +1690,34 @@ on('chat:message', function(msg) {
 
         //for damage display
         if (DoubleA){
-            timesA = " x 2"
+            timesA = " x 2";
             if (QuadA){
-                timesA = " x 4"
+                timesA = " x 4";
             }
         }
         if (DoubleB){
-            timesB = " x 2"
+            timesB = " x 2";
             if (QuadB){
-                timesB = " x 4"
+                timesB = " x 4";
             }
         }
         if (WTAA){
-            dispDmgA = dispDmgA+ '<span style = "color: blue;"> ↑</span>'
-            dispDmgB = dispDmgB + '<span style = "color: red;"> ↓</span>'
+            dispDmgA = dispDmgA+ '<span style = "color: blue;"> ↑</span>';
+            dispDmgB = dispDmgB + '<span style = "color: red;"> ↓</span>';
         }
         if (WTAB){
-            dispDmgA = dispDmgA + '<span style = "color: red;"> ↓</span>'
-            dispDmgB = dispDmgB+ '<span style = "color: blue;"> ↑</span>'
+            dispDmgA = dispDmgA + '<span style = "color: red;"> ↓</span>';
+            dispDmgB = dispDmgB+ '<span style = "color: blue;"> ↑</span>';
         }
 
         //adapted from Ciorstaidh's Faerun Calendar css
-        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"';
         var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
         var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
-        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
-        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
-        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
-        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"';
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"';
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"';
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"';
         sendChat(who, '<div ' + divstyle + '>' + //--
                 '<div ' + headstyle + '>Combat</div>' + //--
                 '<div style = "margin: 0px auto; width: 100%; text-align: center;">' + //--
@@ -1732,16 +1750,11 @@ on('chat:message', function(msg) {
                 '<div style = "margin: 0 auto; width: 70%;">' + Chatstr + '</div>' + //--
             '</div>'
         );
-        if (IsPromoA == true){
-            InLvA += 20;
-        }
-        if (IsPromoB == true){
-            InLvB += 20;
-        }
         //Calculate EXP; commented out for the test
-        EXPA += EXPAmod
+        EXPA += EXPAmod;
+        log(EXPAmod);
         CurrEXP.set("current",EXPA);
-        log(EXPA)
+        log(EXPA);
         if (CurrEXP.get("current") >= 100){
             CurrEXP.set("current",CurrEXP.get("current")-100);
             //Get growths
@@ -1813,7 +1826,7 @@ on("change:campaign:turnorder", function(turn) {
     else turnorder = JSON.parse(Campaign().get("turnorder"));
     for (var i in turnorder){
         if (turnorder[i].custom == "Turn Counter"){
-            turncounter = turnorder[i]
+            turncounter = turnorder[i];
         }
     }
     if (turnorder[0] !== turncounter){ //STRICT EQUALITY checking for if it's the turncounter's "turn"
@@ -1824,15 +1837,15 @@ on("change:campaign:turnorder", function(turn) {
     if (turncounter != undefined){
         n = turncounter.pr;
     } else {
-        n = 0
+        n = 0;
     }
 
-    log(n)
+    log(n);
     Skills = filterObjs(function(obj) {
         if (obj.get('type') !== 'ability' || obj.get('action').indexOf('"triggertime": "turn"') == -1) return false;
         return obj;
     });
-    log(Skills)
+    log(Skills);
     if (Skills != []){
        for (i in Skills){
            let id = Skills[i].get('characterid');
@@ -1842,7 +1855,7 @@ on("change:campaign:turnorder", function(turn) {
     } else {
         return;
     }
-    log(Skills)
+    log(Skills);
 
     //Skills system, user-centric version
     let user;
@@ -1866,26 +1879,28 @@ on("change:campaign:turnorder", function(turn) {
         let DmgtypeU;
         let PhysmagU;
         let PhysmaginvU;
+        let StattargetU;
+        let StattargetE;
         let HPA;
         let CurrHPA;
-        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
+        var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"';
         var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';
         var headstyle = 'style="color: #f3f3f3; font-size: 18px; text-align: left; font-variant: small-caps; background-color: #353535; padding: 4px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;"';
-        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"'
-        var wrapperstyle = 'style="display: inline-block; padding:2px;"'
-        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"'
-        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"'
+        var namestyle = 'style="background-color: #353535; color: #f3f3f3; text-align: center; font-weight: bold; overflow: hidden; margin: 4px; margin-right: 0px; border-radius: 10px; font-family: Helvetica, Arial, sans-serif;"';
+        var wrapperstyle = 'style="display: inline-block; padding:2px;"';
+        var statdiv = 'style="border: 1px solid #353535; border-radius: 5px; overflow: hidden; text-align: center; display: inline-block; margin-left: 4px;"';
+        var cellabel = 'style="background-color: #353535; color: #f3f3f3; font-weight: bold; padding: 2px;"';
 
         function Skill(userid, obj, triggertime) { //haha END ME
             if (typeof obj != "object") {
-                log("obj is not an object :(")
+                log("obj is not an object :(");
                 return;
             }
             if (obj.triggertime != "turn"){ //JUST making sure
                 return;
             }
             //no whotriggered checking because it'll always be the attacker
-            log("Okay, first barrier passed")
+            log("Okay, first barrier passed");
             user = "attacker";
             RNGSklU = Number(getAttrByName(userid, 'skl_total'));
             RNGLckU = Number(getAttrByName(userid, 'lck_total'));
@@ -1896,10 +1911,10 @@ on("change:campaign:turnorder", function(turn) {
             let who = findObjs({ //get the first token on the page that represents the given user
                 type: "character",
                 id: userid
-            })[0].get("name") || "User"
+            })[0].get("name") || "User";
             HPA = Number(getAttrByName(userid, 'hp_current'));
-            DmgtypeU = ""
-            DmgtypeE = "" //doesn't matter since commands are non-combative anyways
+            DmgtypeU = "";
+            DmgtypeE = ""; //doesn't matter since commands are non-combative anyways
             Usertoken = findObjs({ //get the first token on the page that represents the given user
                 type: "graphic",
                 subtype: "token",
@@ -1963,7 +1978,7 @@ on("change:campaign:turnorder", function(turn) {
             if ((obj.turncond != "none") && (eval(obj.turncond) != true)) {
                 return;
             }
-            log(obj.rng)
+            log(obj.rng);
 
             //actual skill function
             function skillMain() {
@@ -1973,11 +1988,11 @@ on("change:campaign:turnorder", function(turn) {
                 usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
                 so I think it should be alright. Oh well!*/
                 let HealmodU = parseInt(eval(obj.u_healfactor));
-                log("HealmodU is" + HealmodU)
+                log("HealmodU is" + HealmodU);
 
                 let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
-                log(obj.u_stat_target)
-                log(obj.e_stat_target)
+                log(obj.u_stat_target);
+                log(obj.e_stat_target);
                 //determining the actual stat target
                 if (obj.u_stat_target || obj.e_stat_target != "none") {
                     for (var r in statnames) {
@@ -1991,7 +2006,7 @@ on("change:campaign:turnorder", function(turn) {
                 }
                 //for current HP-affecting skills
                 if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
-                    StattargetU = eval(obj.u_stat_target)
+                    StattargetU = eval(obj.u_stat_target);
                 }
                 if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
                     StattargetE = eval(obj.e_stat_target);

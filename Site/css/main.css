@@ -1891,6 +1891,15 @@
 					background: #df93b8;
 				}
 
+			.icon.circle.fa-patreon {
+				background: #F96854;
+				color: #fff;
+			}
+
+				.icon.circle.fa-patreon:hover {
+					background: #fb9a8d;
+				}
+
 		.icon.featured {
 			cursor: default;
 			display: block;

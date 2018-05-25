@@ -487,7 +487,7 @@ on('chat:message', function(msg) {
             CurrEXP.set("current",CurrEXP.get("current")-100);
             //Get growths
             LvA.set("current", Number(LvA.get("current")) + 1);
-            let Lvstr = "/me leveled up!";
+            let Lvstr = '';
             let HPG = Number(getAttrByName(attacker.id, 'hp_gtotal'));
             let StrG = Number(getAttrByName(attacker.id, 'str_gtotal'));
             let MagG = Number(getAttrByName(attacker.id, 'mag_gtotal'));
