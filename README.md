@@ -53,6 +53,9 @@ Now that it's up on Roll20, you can easily add Emblem20 to your game! Be warned,
 
 `!forecast @{selected|token_id} @{target|token_id}`
 
+**Unit-Viewer**
+
+`!view @{selected|token_id} @{target|token_id}`
 
 **Modify-Stats**\*
 
