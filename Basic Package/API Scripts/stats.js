@@ -29,6 +29,11 @@ on('chat:message', function(msg) {
         }
 
         var who = getObj('character', selectedToken.get('represents'));
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Token must be linked to a character in the journal!');
+            return;
+        }
         var user = who.id
         if (!who) {
             who = selectedToken.get('name');

@@ -46,7 +46,11 @@ on('chat:message', function(msg) {
 
         var attacker = getObj('character', selectedToken.get('represents'));
         var defender = getObj('character', targetToken.get('represents'));
-
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === "" || targetToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Both tokens must be linked to characters in the journal!');
+            return;
+        }
         //grab all commands
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         for (var i in SkillsA){
@@ -83,7 +87,11 @@ on('chat:message', function(msg) {
         var targetToken = getObj('graphic', targetId);
         var attacker = getObj('character', selectedToken.get('represents'));
         var defender = getObj('character', targetToken.get('represents'));
-
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === "" || targetToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Both tokens must be linked to characters in the journal!');
+            return;
+        }
         var who = getObj('character', selectedToken.get('represents'));
         if (!who) {
             who = selectedToken.get('name');

@@ -41,6 +41,11 @@ on('chat:message', function(msg) {
             return;
         }
         var user = getObj('character', selectedToken.get('represents'));
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Token must be linked to a character in the journal!');
+            return;
+        }
         //Personal values, for statboosters
         let HPi = findObjs({ characterid: user.id, name: "HP_i", type: "attribute"})[0];
         let Stri = findObjs({ characterid: user.id, name: "Str_i", type: "attribute"})[0];

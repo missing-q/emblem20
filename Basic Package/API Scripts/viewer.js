@@ -47,6 +47,11 @@ on('chat:message', function(msg) {
         }
         var user = getObj('character', selectedToken.get('represents'));
         var target = getObj('character', targetToken.get('represents'));
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === "" || targetToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Both tokens must be linked to characters in the journal!');
+            return;
+        }
         //just get target's stats
         let WNameB = getAttrByName(target.id, 'repeating_weapons_$0_WName') || "Empty";
         let LvB = getAttrByName(target.id, 'Level');

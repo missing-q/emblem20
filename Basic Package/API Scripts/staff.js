@@ -47,6 +47,11 @@ on('chat:message', function(msg) {
         }
         var staffer = getObj('character', selectedToken.get('represents'));
         var target = getObj('character', targetToken.get('represents'));
+        //Check to make sure that the tokens represent characters
+        if (selectedToken.get('represents') === "" || targetToken.get('represents') === ""){
+            sendChat('SYSTEM', 'Both tokens must be linked to characters in the journal!');
+            return;
+        }
         let CurrHPA = findObjs({ characterid: staffer.id, name: "HP_current"})[0];
         //Target stats for tasty statuses
         let CurrHPB = findObjs({ characterid: target.id, name: "HP_current"})[0];
