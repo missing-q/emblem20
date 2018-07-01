@@ -426,31 +426,34 @@ on('chat:message', function(msg) {
                         let DdgStat = getAttrByName(char, 'Ddg');
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
-                        let rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]))
+                        let target = eval(obj.radius_target); //likewise
+                        let rad_effect;
 
-                        log(effect[0].get("current"))
-                        effect[0].setWithWorker({
-                            current: rad_effect
-                        });
-                        log(effect[0].get("current"))
+                        for (var i in effect) {
+                          log(target[i].get("current"))
+                          rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          target[i].setWithWorker({
+                              current: rad_effect
+                          });
+                          log(target[i].get("current"))
 
-                        if ((effect[0] == HPcurrC) && (char == attacker.id)) {
-                            HPA += parseInt(effect[1])
-                        }
+                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
+                              HPA += parseInt(effect[1])
+                          }
 
-                        if ((effect[0] == HPcurrC) && (char == defender.id)) {
-                            HPB += parseInt(effect[1])
+                          if ((target[i] == HPcurrC) && (char == defender.id)) {
+                              HPB += parseInt(effect[1])
+                          }
                         }
                     }
-
                     CurrHPA.setWithWorker({
                         current: HPA
                     });
                     CurrHPB.setWithWorker({
                         current: HPB
                     });
-
                 }
+
                 //recursionnn
                 if (obj.children_skills != []) {
                     for (var y in obj.children_skills) {

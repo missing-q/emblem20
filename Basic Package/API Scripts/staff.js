@@ -455,11 +455,11 @@ on('chat:message', function(msg) {
                         if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken, token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
                         else return true;
                     });
-                    log("Tokens in radius are: ");
+                    log("Tokens in radius are: ")
                     for (var i in tokenInRadius) {
-                        log(tokenInRadius[i]);
+                        log(tokenInRadius[i])
                             //stat targets
-                        let char = tokenInRadius[i].get("represents");
+                        let char = tokenInRadius[i].get("represents")
                         let HPcurrC = findObjs({
                             characterid: char,
                             name: "HP_current"
@@ -524,20 +524,24 @@ on('chat:message', function(msg) {
                         let DdgStat = getAttrByName(char, 'Ddg');
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
-                        let rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]));
+                        let target = eval(obj.radius_target); //likewise
+                        let rad_effect;
 
-                        log(effect[0].get("current"));
-                        effect[0].setWithWorker({
-                            current: rad_effect
-                        });
-                        log(effect[0].get("current"));
+                        for (var i in effect) {
+                          log(target[i].get("current"))
+                          rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          target[i].setWithWorker({
+                              current: rad_effect
+                          });
+                          log(target[i].get("current"))
 
-                        if ((effect[0] == HPcurrC) && (char == staffer.id)) {
-                            HPA += parseInt(effect[1]);
-                        }
+                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
+                              HPA += parseInt(effect[1])
+                          }
 
-                        if ((effect[0] == HPcurrC) && (char == target.id)) {
-                            HPVal += parseInt(effect[1]);
+                          if ((target[i] == HPcurrC) && (char == defender.id)) {
+                              HPB += parseInt(effect[1])
+                          }
                         }
                     }
                 }

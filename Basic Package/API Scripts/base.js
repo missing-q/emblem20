@@ -788,29 +788,65 @@ on('chat:message', function(msg) {
                 log(HPA);
                 log("wexp is "+ WEXPA);
 
-                if (obj.radius != 0){
+                if (obj.radius != 0) {
                     //tortured screaming
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken,token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken, token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
                         else return true;
                     });
-                    log("Tokens in radius are: ");
-                    for (var i in tokenInRadius){
-                        log(tokenInRadius[i]);
-                        //stat targets
-                        let char = tokenInRadius[i].get("represents");
-                        let HPcurrC = findObjs({ characterid: char, name: "HP_current"})[0];
-                        let StrC = findObjs({ characterid: char, name: "Str_bd"})[0];
-                        let MagC = findObjs({ characterid: char, name: "Mag_bd"})[0];
-                        let SklC = findObjs({ characterid: char, name: "Skl_bd"})[0];
-                        let SpdC = findObjs({ characterid: char, name: "Spd_bd"})[0];
-                        let LckC = findObjs({ characterid: char, name: "Lck_bd"})[0];
-                        let DefC = findObjs({ characterid: char, name: "Def_bd"})[0];
-                        let ResC = findObjs({ characterid: char, name: "Res_bd"})[0];
-                        let HitC = findObjs({ characterid: char, name: "Hitmod"})[0];
-                        let CritC = findObjs({ characterid: char, name: "Critmod"})[0];
-                        let AvoC = findObjs({ characterid: char, name: "Avomod"})[0];
-                        let DdgC = findObjs({ characterid: char, name: "Ddgmod"})[0];
+                    log("Tokens in radius are: ")
+                    for (var i in tokenInRadius) {
+                        log(tokenInRadius[i])
+                            //stat targets
+                        let char = tokenInRadius[i].get("represents")
+                        let HPcurrC = findObjs({
+                            characterid: char,
+                            name: "HP_current"
+                        })[0];
+                        let StrC = findObjs({
+                            characterid: char,
+                            name: "Str_bd"
+                        })[0];
+                        let MagC = findObjs({
+                            characterid: char,
+                            name: "Mag_bd"
+                        })[0];
+                        let SklC = findObjs({
+                            characterid: char,
+                            name: "Skl_bd"
+                        })[0];
+                        let SpdC = findObjs({
+                            characterid: char,
+                            name: "Spd_bd"
+                        })[0];
+                        let LckC = findObjs({
+                            characterid: char,
+                            name: "Lck_bd"
+                        })[0];
+                        let DefC = findObjs({
+                            characterid: char,
+                            name: "Def_bd"
+                        })[0];
+                        let ResC = findObjs({
+                            characterid: char,
+                            name: "Res_bd"
+                        })[0];
+                        let HitC = findObjs({
+                            characterid: char,
+                            name: "Hitmod"
+                        })[0];
+                        let CritC = findObjs({
+                            characterid: char,
+                            name: "Critmod"
+                        })[0];
+                        let AvoC = findObjs({
+                            characterid: char,
+                            name: "Avomod"
+                        })[0];
+                        let DdgC = findObjs({
+                            characterid: char,
+                            name: "Ddgmod"
+                        })[0];
 
                         //numerical stats
                         let HPcurrStat = getAttrByName(char, 'HP_current');
@@ -826,24 +862,35 @@ on('chat:message', function(msg) {
                         let AvoStat = getAttrByName(char, 'Avo');
                         let DdgStat = getAttrByName(char, 'Ddg');
 
-                        effect = eval(obj.radius_effect); //effect MUST be an array!!!
-                        rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]));
+                        let effect = eval(obj.radius_effect); //effect MUST be an array!!!
+                        let target = eval(obj.radius_target); //likewise
+                        let rad_effect;
 
-                        log(effect[0].get("current"));
-                        effect[0].setWithWorker({
-                            current: rad_effect
-                        });
-                        log(effect[0].get("current"));
+                        for (var i in effect) {
+                          log(target[i].get("current"))
+                          rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          target[i].setWithWorker({
+                              current: rad_effect
+                          });
+                          log(target[i].get("current"))
 
-                        if ((effect[0] == HPcurrC) && (char == attacker.id)){
-                            HPA += parseInt(effect[1]);
-                        }
+                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
+                              HPA += parseInt(effect[1])
+                          }
 
-                        if ((effect[0] == HPcurrC) && (char == defender.id)){
-                            HPB += parseInt(effect[1]);
+                          if ((target[i] == HPcurrC) && (char == defender.id)) {
+                              HPB += parseInt(effect[1])
+                          }
                         }
                     }
+                    CurrHPA.setWithWorker({
+                        current: HPA
+                    });
+                    CurrHPB.setWithWorker({
+                        current: HPB
+                    });
                 }
+
                 //recursionnn
                 if (obj.children_skills != []){
                     for (var y in obj.children_skills){
@@ -2137,18 +2184,25 @@ on("change:campaign:turnorder", function(turn) {
                         let DdgStat = getAttrByName(char, 'Ddg');
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
-                        let rad_effect = Number(effect[0].get("current")) + parseInt(Number(effect[1]))
+                        let target = eval(obj.radius_target); //likewise
+                        let rad_effect;
 
-                        log(effect[0].get("current"))
-                        effect[0].setWithWorker({
-                            current: rad_effect
-                        });
-                        log(effect[0].get("current"))
+                        for (var i in effect) {
+                          log(target[i].get("current"))
+                          rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          target[i].setWithWorker({
+                              current: rad_effect
+                          });
+                          log(target[i].get("current"))
 
-                        if ((effect[0] == HPcurrC) && (char == userid)) {
-                            HPA += parseInt(effect[1])
+                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
+                              HPA += parseInt(effect[1])
+                          }
+
+                          if ((target[i] == HPcurrC) && (char == defender.id)) {
+                              HPB += parseInt(effect[1])
+                          }
                         }
-
                     }
                 }
 
