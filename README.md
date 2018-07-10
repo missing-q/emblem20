@@ -18,6 +18,7 @@ Emblem20 is a mixture of Awakening/Fates mechanics (as per the original tabletop
 
 ## To Do ##
 - Finish all of the goals for the [Tellius](https://github.com/missing-q/emblem20/projects/1) Package and release a beta build of that
+- Finish tweaking stuff for the Classic Package, which is more or less basically the more rulebook-adherent version of the Basic Package.
 - Add more skills to the [wiki!](https://github.com/missing-q/emblem20/wiki)
 - Eventually figure out a good way to handle "aura" skills (Hex, Charm, etc.)
 - Add different "FE Era packages"- one with pure Fates mechanics, pure Tellius mechanics, etc.

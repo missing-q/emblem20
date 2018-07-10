@@ -72,9 +72,6 @@
 .charsheet .sheet-div {
     background-color:#353535;
 }
-.charsheet th {
-    text-align: center;
-}
 .charsheet .sheet-mainstats th {
     border-collapse: separate;
     border-spacing: 5px;
