@@ -19,6 +19,7 @@ on('chat:message', function(msg) {
         var avo = Number(parts[3]);
         var ddg = Number(parts[4]);
         var dmg = Number(parts[5]);
+        var dec = Number(parts[6])
         log(parts)
 
         var selectedToken = getObj('graphic', selectedId);
@@ -67,6 +68,49 @@ on('chat:message', function(msg) {
         Dmgmod.setWithWorker({
             current: Number(Hitmod.get("current")) + dmg
         });
+
+        //queue queue queue
+        if (hit != 0 && dec != 0){
+            if (hit > 0){
+                queue.push([Hitmod, "decrement", dec, 0])
+            }
+            else {
+                queue.push([Hitmod, "increment", dec, 0])
+            }
+        }
+        if (crit != 0 && dec != 0){
+            if (crit > 0){
+                queue.push([Critmod, "decrement", dec, 0])
+            }
+            else {
+                queue.push([Critmod, "increment", dec, 0])
+            }
+        }
+        if (avo != 0 && dec != 0){
+            if (avo > 0){
+                queue.push([Avomod, "decrement", dec, 0])
+            }
+            else {
+                queue.push([Avomod, "increment", dec, 0])
+            }
+        }
+        if (ddg != 0 && dec != 0){
+            if (hit > 0){
+                queue.push([Ddgmod, "decrement", dec, 0])
+            }
+            else {
+                queue.push([Ddgmod, "increment", dec, 0])
+            }
+        }
+        if (dmg != 0 && dec != 0){
+            if (dmg > 0){
+                queue.push([Dmgmod, "decrement", dec, 0])
+            }
+            else {
+                queue.push([Dmgmod, "increment", dec, 0])
+            }
+        }
+
 
         var divstyle = 'style="width: 189px; border: 1px solid #353535; background-color: #f3f3f3; padding: 5px; color: #353535;"'
         var tablestyle = 'style="text-align:center; margin: 0 auto; border-collapse: collapse; margin-top: 5px; border-radius: 2px"';

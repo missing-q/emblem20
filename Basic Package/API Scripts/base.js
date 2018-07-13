@@ -2210,36 +2210,37 @@ on("change:campaign:turnorder", function(turn) {
                         if (obj.u_stat_target == statnames[r] + "U") {
                             StattargetU = eval(statnames[r] + "U");
                         }
-                        if (obj.e_stat_target == statnames[r] + "E") {
-                            StattargetE = eval(statnames[r] + "E");
-                        }
                     }
                 }
                 //for current HP-affecting skills
                 if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
                     StattargetU = eval(obj.u_stat_target);
                 }
-                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
-                    StattargetE = eval(obj.e_stat_target);
-                }
 
                 let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
-                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
-                log(StattargetE);
-                log(StattargetmodE);
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
+                    let currvl = parseInt(StattargetU.get("current"));
+                    let newvl = parseInt(StattargetmodU)
+                    log(currvl);
+                    log(newvl)
                     StattargetU.setWithWorker({
-                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
+                        current: currvl + newvl
                     });
                     log("Set U-targeted stat to "+ StattargetU.get("current"));
                 }
 
-                if (obj.e_stat_target != "none" && StattargetE != undefined){
-                    StattargetE.setWithWorker({
-                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
-                    });
-                    log("Set E-targeted stat to "+ StattargetE.get("current"));
+                //queue queue queue
+                if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
+                    if (StattargetmodU > 0){
+                        queue.push([StattargetU, "decrement", 1, 0])
+                        log([StattargetU, "decrement", 1, 0])
+                        log("Pushed to queue!")
+                    } else {
+                        queue.push([StattargetU, "increment", 1, 0])
+                        log([StattargetU, "increment", 1, 0])
+                        log("Pushed to queue!")
+                    }
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
@@ -2331,13 +2332,23 @@ on("change:campaign:turnorder", function(turn) {
                           });
                           log(target[i].get("current"))
 
-                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
+                          if (target[i] == HPcurrC) {
                               HPA += parseInt(effect[1])
                           }
 
-                          if ((target[i] == HPcurrC) && (char == defender.id)) {
-                              HPB += parseInt(effect[1])
+                           //queueeeee
+                          if (target[i] != HPCurrC) {
+                            if (parseInt(effect[i]) > 0){
+                                queue.push([target[i], "decrement", 1, 0])
+                                log([target[i], "decrement", 1, 0])
+                                log("Pushed to queue!")
+                            } else {
+                                queue.push([target[i], "increment", 1, 0])
+                                log([target[i], "increment", 1, 0])
+                                log("Pushed to queue!")
+                            }
                           }
+                          //:OOOOOO
                         }
                     }
                 }
