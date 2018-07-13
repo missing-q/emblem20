@@ -753,19 +753,51 @@ on('chat:message', function(msg) {
                 log(StattargetmodE);
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
+                    let currvl = parseInt(StattargetU.get("current"));
+                    let newvl = parseInt(StattargetmodU)
+                    log(currvl);
+                    log(newvl)
                     StattargetU.setWithWorker({
-                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
+                        current: currvl + newvl
                     });
                     log("Set U-targeted stat to "+ StattargetU.get("current"));
                 }
 
                 if (obj.e_stat_target != "none" && StattargetE != undefined){
+                    let currvl = parseInt(StattargetE.get("current"));
+                    let newvl = parseInt(StattargetmodE)
+                    log(currvl);
+                    log(newvl)
                     StattargetE.setWithWorker({
-                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
+                        current: currvl + newvl
                     });
                     log("Set E-targeted stat to "+ StattargetE.get("current"));
                 }
+                //queue queue queue
+                if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
+                    if (StattargetmodU > 0){
+                        queue.push([StattargetU, "decrement", 1, 0])
+                        log([StattargetU, "decrement", 1, 0])
+                        log("Pushed to queue!")
+                    } else {
+                        queue.push([StattargetU, "increment", 1, 0])
+                        log([StattargetU, "increment", 1, 0])
+                        log("Pushed to queue!")
+                    }
+                }
+                if (obj.e_stat_target != "CurrHPU" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
+                    if (StattargetmodE> 0){
+                        queue.push([StattargetE, "decrement", 1, 0])
+                        log([StattargetE, "decrement", 1, 0])
+                        log("Pushed to queue!")
+                    } else {
+                        queue.push([StattargetE, "increment", 1, 0])
+                        log([StattargetE, "increment", 1, 0])
+                        log("Pushed to queue!")
+                    }
+                }
 
+                //
                 if (userid == attacker.id) {
                     log("Damage before is " + DmgA);
                     DmgA += DamagemodU;
@@ -901,6 +933,20 @@ on('chat:message', function(msg) {
                           if ((target[i] == HPcurrC) && (char == defender.id)) {
                               HPB += parseInt(effect[1])
                           }
+
+                          //queueeeee
+                          if (target[i] != HPCurrC) {
+                            if (parseInt(effect[i]) > 0){
+                                queue.push([target[i], "decrement", 1, 0])
+                                log([target[i], "decrement", 1, 0])
+                                log("Pushed to queue!")
+                            } else {
+                                queue.push([target[i], "increment", 1, 0])
+                                log([target[i], "increment", 1, 0])
+                                log("Pushed to queue!")
+                            }
+                          }
+                          //:OOOOOO
                         }
                     }
                     CurrHPA.setWithWorker({
