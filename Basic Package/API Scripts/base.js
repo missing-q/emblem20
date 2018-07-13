@@ -1,5 +1,6 @@
 /*jshint esversion: 6 */
 //credit to Brian on the forums for this framework!
+var queue = [];
 function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
     let AXCoord = token1.get("left");
     let AYCoord = token1.get("top");
@@ -913,7 +914,7 @@ on('chat:message', function(msg) {
                 //recursionnn
                 if (obj.children_skills != []){
                     for (var y in obj.children_skills){
-                        Child_Skill = JSON.parse(obj.children_skills[y]);
+                        Child_Skill = obj.children_skills[y];
                         Skill(userid, targetid, Child_Skill, "any"); //child implementations of preexisting skills should have the triggertime "any" as well
                     }
                 }

@@ -318,6 +318,9 @@ on('chat:message', function(msg) {
                         current: parseInt(j.target.get("current")) + j.effect
                     });
                     Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' temporarily increased by '+ j.effect +'!</p>'
+                    queue.push([j.target, "decrement", 1, 0]);
+                    log([j.target, "decrement", 1, 0])
+                    log("Pushed to queue!")
                 }
                 if (j.type == "statbooster"){
                     j.target.setWithWorker({
