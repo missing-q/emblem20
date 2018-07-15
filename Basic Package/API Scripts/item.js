@@ -68,14 +68,8 @@ on('chat:message', function(msg) {
         let HPcurrent = findObjs({ characterid: user.id, name: "HP_current", type: "attribute"})[0];
         let Userclass = findObjs({ characterid: user.id, name: "Class", type: "attribute"})[0];
 
-        let Item_Name0 = findObjs({ characterid: user.id, name: "item_name0", type: "attribute"})[0];
-        let Item_Name1 = findObjs({ characterid: user.id, name: "item_name1", type: "attribute"})[0];
-        let Item_Name2 = findObjs({ characterid: user.id, name: "item_name2", type: "attribute"})[0];
-        let Item_Uses0 = findObjs({ characterid: user.id, name: "item_uses0", type: "attribute"})[0];
-        let Item_Uses1 = findObjs({ characterid: user.id, name: "item_uses1", type: "attribute"})[0];
-        let Item_Uses2 = findObjs({ characterid: user.id, name: "item_uses2", type: "attribute"})[0];
-        itemuses = [Item_Uses0,Item_Uses1,Item_Uses2]
-        itemnames = [Item_Name0,Item_Name1,Item_Name2]
+        let itemuses = ["item_uses0", "item_uses1", "item_uses2"]
+        let itemnames = ["item_name0", "item_name1", "item_name2"]
         log(itemuses)
         log(itemnames)
         //All items as objects QnQ
@@ -349,17 +343,18 @@ on('chat:message', function(msg) {
         }
         //decrease uses
         for (var i in itemnames){
-            log(i)
-            log(itemnames[i])
-            if (itemnames[i] != null){ //no object assigned checking
-                if (itemnames[i].get("current") == item){
-                    itemuses[i].setWithWorker({
-                        current: parseInt(itemuses[i].get("current")) - 1
-                    });
-                    if (itemuses[i].get("current") == 0){
-                        itemnames[i].setWithWorker({
-                            current: ""
-                        });
+            let itemname_get = getAttrByName(user.id, itemnames[i]);
+            let itemuses_get = getAttrByName(user.id, itemuses[i]);
+            let names_i = itemnames[i]
+            let uses_i = itemuses[i]
+            log(uses_i)
+            if (itemname_get != null){ //no object assigned checking
+                if (itemname_get == item){
+                    let num = itemuses_get - 1
+                    log(num)
+                    setAttrs(user.id, {[uses_i]: num})
+                    if (num <= 0){
+                        setAttrs(user.id, {[names_i]: ""})
                     }
                 }
             }

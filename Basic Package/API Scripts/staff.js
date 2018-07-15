@@ -93,7 +93,7 @@ on('chat:message', function(msg) {
         let Range1A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range1')) || 1;
         let Range2A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range2')) || 1;
         let fIDA = getAttrByName(staffer.id, 'fid')|| "";
-        let UsesA = findObjs({ characterid: staffer.id, name: "repeating_weapons_"+fIDA+"_Uses"},{ caseInsensitive: true })[0]; //assumes it exists, since that's a requirement for the thing to activate
+        let UsesA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Uses')) || 0;
         let diff = ManhDist(selectedToken, targetToken);
         let AllegianceA = getAttrByName(staffer.id, 'all');
         let AllegianceB = getAttrByName(target.id, 'all');
@@ -665,7 +665,7 @@ on('chat:message', function(msg) {
                                 }
                                 CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal});
                                 chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>";
-                                UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1});
+                                setAttrs(user.id, {'repeating_weapons_$0_Uses': UsesA - 1})
                                 dispHitA = "--";
                             }
                             else {
@@ -684,7 +684,7 @@ on('chat:message', function(msg) {
                                     }
                                     log(j.status);
                                     targetToken.set(j.status);
-                                    UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1});
+                                    setAttrs(user.id, {'repeating_weapons_$0_Uses': UsesA - 1})
                                     chatstr += '<p style = "margin-bottom: 0px;">'+ j.chatmsg + '</p>';
                                     StaffEXPA = j.exp;
                                 }
