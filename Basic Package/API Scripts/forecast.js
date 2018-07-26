@@ -272,6 +272,9 @@ on('chat:message', function(msg) {
             log("Defender's weapon is usable!");
         } else {
             log("Defender's weapon is not usable!");
+            log((WepUB[WepTypes.indexOf(WTypeB)]));
+            log(WepRanksB[WepTypes.indexOf(WTypeB)].get("current"));
+            log(WRankB_num)
             CanAttackB = false;
         }
 

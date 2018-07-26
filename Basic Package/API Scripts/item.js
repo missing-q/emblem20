@@ -308,13 +308,28 @@ on('chat:message', function(msg) {
                     Itemstr += '<p style = "margin-bottom: 0px;">' + j.desc + '</p>'
                 }
                 if (j.type == "temp_statbooster"){
+                    let curr = parseInt(j.target.get("current"));
                     j.target.setWithWorker({
-                        current: parseInt(j.target.get("current")) + j.effect
+                        current: curr + j.effect
                     });
                     Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' temporarily increased by '+ j.effect +'!</p>'
-                    queue.push([j.target, "decrement", 1, 0]);
-                    log([j.target, "decrement", 1, 0])
+                    queue.push([j.target, "decrement", 1, 0, "item"]);
+                    log([j.target, "decrement", 1, 0, "item"])
                     log("Pushed to queue!")
+
+                    //
+                    for (var i in queue){
+                        if ((queue[i][0] == j.target) && (queue[i][4] == "item") && (queue[i] != queue[queue.length - 1])){ //change the checked string for each different queuetype
+                            queue.shift();
+                            i--;
+                            j.target.setWithWorker({
+                                current: curr
+                            }); //reset stat back to what it was before
+                            log("Removed repeating b/d");
+                            Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' cannot be increased any more! </p>'
+                        }
+                    }
+                    //
                 }
                 if (j.type == "statbooster"){
                     j.target.setWithWorker({

@@ -19,13 +19,26 @@ on("change:campaign:turnorder", function(turn) {
         n = 0;
     }
     /*queueitem structure:
-      [{stat}, "increment/decrement", how much/turn, floor/ceiling]
+      [{stat}, "increment/decrement", how much/turn, floor/ceiling, source]
+      sources: "combat", "combat-r", "staff", "staff-r", "item", "command", "command-r", "turn", "turn-r"
+      -r's are for radii
     */
     if (queue == []){
         log("Action Queue is empty!")
         return;
     }
     log(queue);
+    //remove entries targeting the same stat from the queue; prioritize earlier entries
+    for (var i in queue){
+        for (var j in queue){
+            if ((queue[i][0] == queue[j][0]) && (queue[i][4] == queue[j][4]) && (i != j)){ //check if the stats and sources are the same
+                log("Removed repeated entry from queue: " + queue[i][0].get("name")) //log repeats before deletion :0
+                queue.shift(); //remove element from queue
+                i --; //decrement i
+                j --;
+            }
+        }
+    }
 
     //iterate over queueitems
     for (var i in queue){
