@@ -20,7 +20,7 @@ on("change:campaign:turnorder", function(turn) {
     }
     /*queueitem structure:
       [{stat}, "increment/decrement", how much/turn, floor/ceiling, source]
-      sources: "combat", "combat-r", "staff", "staff-r", "item", "command", "command-r", "turn", "turn-r"
+      sources: "combat", "combat-r", "staff", "staff-r", "item", "command", "command-r", "turn", "turn-r", "stat"
       -r's are for radii
     */
     if (queue == []){

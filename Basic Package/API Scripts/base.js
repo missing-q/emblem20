@@ -888,6 +888,10 @@ on('chat:message', function(msg) {
                             characterid: char,
                             name: "HP_current"
                         })[0];
+                        let HPC = findObjs({
+                            characterid: char,
+                            name: "HP_bd"
+                        })[0];
                         let StrC = findObjs({
                             characterid: char,
                             name: "Str_bd"
@@ -915,6 +919,10 @@ on('chat:message', function(msg) {
                         let ResC = findObjs({
                             characterid: char,
                             name: "Res_bd"
+                        })[0];
+                        let MovC = findObjs({
+                            characterid: char,
+                            name: "Mov_bd"
                         })[0];
                         let HitC = findObjs({
                             characterid: char,
@@ -2287,6 +2295,10 @@ on("change:campaign:turnorder", function(turn) {
                             characterid: char,
                             name: "HP_current"
                         })[0];
+                        let HPC = findObjs({
+                            characterid: char,
+                            name: "HP_bd"
+                        })[0];
                         let StrC = findObjs({
                             characterid: char,
                             name: "Str_bd"
@@ -2314,6 +2326,10 @@ on("change:campaign:turnorder", function(turn) {
                         let ResC = findObjs({
                             characterid: char,
                             name: "Res_bd"
+                        })[0];
+                        let MovC = findObjs({
+                            characterid: char,
+                            name: "Mov_bd"
                         })[0];
                         let HitC = findObjs({
                             characterid: char,

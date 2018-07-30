@@ -72,42 +72,42 @@ on('chat:message', function(msg) {
         //queue queue queue
         if (hit != 0 && dec != 0){
             if (hit > 0){
-                queue.push([Hitmod, "decrement", dec, 0])
+                queue.push([Hitmod, "decrement", dec, 0, "stat"])
             }
             else {
-                queue.push([Hitmod, "increment", dec, 0])
+                queue.push([Hitmod, "increment", dec, 0, "stat"])
             }
         }
         if (crit != 0 && dec != 0){
             if (crit > 0){
-                queue.push([Critmod, "decrement", dec, 0])
+                queue.push([Critmod, "decrement", dec, 0, "stat"])
             }
             else {
-                queue.push([Critmod, "increment", dec, 0])
+                queue.push([Critmod, "increment", dec, 0, "stat"])
             }
         }
         if (avo != 0 && dec != 0){
             if (avo > 0){
-                queue.push([Avomod, "decrement", dec, 0])
+                queue.push([Avomod, "decrement", dec, 0, "stat"])
             }
             else {
-                queue.push([Avomod, "increment", dec, 0])
+                queue.push([Avomod, "increment", dec, 0, "stat"])
             }
         }
         if (ddg != 0 && dec != 0){
             if (hit > 0){
-                queue.push([Ddgmod, "decrement", dec, 0])
+                queue.push([Ddgmod, "decrement", dec, 0, "stat"])
             }
             else {
-                queue.push([Ddgmod, "increment", dec, 0])
+                queue.push([Ddgmod, "increment", dec, 0, "stat"])
             }
         }
         if (dmg != 0 && dec != 0){
             if (dmg > 0){
-                queue.push([Dmgmod, "decrement", dec, 0])
+                queue.push([Dmgmod, "decrement", dec, 0, "stat"])
             }
             else {
-                queue.push([Dmgmod, "increment", dec, 0])
+                queue.push([Dmgmod, "increment", dec, 0, "stat"])
             }
         }
 
