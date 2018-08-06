@@ -1,4 +1,50 @@
 /*jshint esversion: 6 */
+//huge credit to The Aaron on the forums for making this function
+//properly orders repeating functions
+var attrLookup = function(character,name,caseSensitive){
+    let match=name.match(/^(repeating_.*)_\$(\d+)_.*$/);
+    let returnval;
+    if(match){
+        let index=match[2],
+            attrMatcher=new RegExp(`^${name.replace(/_\$\d+_/,'_([-\\da-zA-Z]+)_')}$`,(caseSensitive?'i':'')),
+            createOrderKeys=[],
+            attrs=_.chain(findObjs({type:'attribute', characterid:character.id}))
+                .map((a)=>{
+                    return {attr:a,match:a.get('name').match(attrMatcher)};
+                })
+                .filter((o)=>o.match)
+                .each((o)=>createOrderKeys.push(o.match[1]))
+                .reduce((m,o)=>{ m[o.match[1]]=o.attr; return m;},{})
+                .value(),
+            sortOrderKeys = _.chain( ((findObjs({
+                type:'attribute',
+                    characterid:character.id,
+                    name: `_reporder_${match[1]}`
+                })[0]||{get:_.noop}).get('current') || '' ).split(/\s*,\s*/))
+                .intersection(createOrderKeys)
+                .union(createOrderKeys)
+                .value();
+        if(index<sortOrderKeys.length && _.has(attrs,sortOrderKeys[index])){
+            returnval = attrs[sortOrderKeys[index]];
+            if (returnval != undefined){
+                return returnval.get("current")
+            }
+            else {
+                return ""
+            }
+        }
+    }
+
+    returnval = findObjs({ type:'attribute', characterid:character.id, name: name})[0];
+    if (returnval != undefined){
+        return returnval.get("current")
+    }
+    else {
+        return ""
+    }
+
+};
+
 //credit to Brian on the forums for this framework!
 var queue = [];
 function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
@@ -116,28 +162,28 @@ on('chat:message', function(msg) {
         let ResB = Number(getAttrByName(defender.id, 'res_total'));
 
         //Grab weapon stats
-        let WNameA = getAttrByName(attacker.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WNameB = getAttrByName(defender.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WTypeA = getAttrByName(attacker.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let WTypeB = getAttrByName(defender.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Mt')) || 0;
-        let MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Mt')) || 0;
-        let WtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
-        let WtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-        let Range1A = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range1B = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range2A = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Range2')) || 1;
-        let Range2B = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Range2')) || 1;
-        let WRankA = getAttrByName(attacker.id, 'repeating_weapons_$0_WRank') || "E";
-        let WRankB = getAttrByName(defender.id, 'repeating_weapons_$0_WRank') || "E";
+        let WNameA = attrLookup(attacker, "repeating_weapons_$0_WName", false) || "Empty";
+        let WNameB = attrLookup(defender, "repeating_weapons_$0_WName", false) || "Empty";
+        let WTypeA = attrLookup(attacker, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let WTypeB = attrLookup(defender, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
+        let MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
+        let WtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Wt", false)) || 0;
+        let WtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Wt", false)) || 0;
+        let Range1A = parseInt(attrLookup(attacker, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range1B = parseInt(attrLookup(defender, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range2A = parseInt(attrLookup(attacker, "repeating_weapons_$0_Range2", false)) || 1;
+        let Range2B = parseInt(attrLookup(defender, "repeating_weapons_$0_Range2", false)) || 1;
+        let WRankA = attrLookup(attacker, "repeating_weapons_$0_WRank", false) || "E";
+        let WRankB = attrLookup(attacker, "repeating_weapons_$0_WRank", false) || "E";
         let fIDA = getAttrByName(attacker.id, 'fid')|| "";
         let fIDB = getAttrByName(defender.id, 'fid')|| "";
         log(fIDA);
         log(fIDB);
         let UsesA;
         let UsesB;
-        let AOEA = getAttrByName(attacker.id, "repeating_weapons_$0_AOE");
-        let AOEB = getAttrByName(defender.id, "repeating_weapons_$0_AOE");
+        let AOEA = parseInt(attrLookup(attacker, "repeating_weapons_$0_AOE", false)) || 0;
+        let AOEB = parseInt(attrLookup(defender, "repeating_weapons_$0_AOE", false)) || 0;
         log("AOE is " + AOEA);
         log("AOE is " + AOEB);
         //check for no rows
@@ -154,10 +200,11 @@ on('chat:message', function(msg) {
         }
         log(UsesA);
         log(UsesB);
-        let StrengthsA = getAttrByName(attacker.id, "repeating_weapons_$0_Strengths") || "";
-        let StrengthsB = getAttrByName(defender.id, "repeating_weapons_$0_Strengths") || "";
+        let StrengthsA = attrLookup(attacker, "repeating_weapons_$0_Strengths", false) || "";
+        let StrengthsB = attrLookup(defender, "repeating_weapons_$0_Strengths", false) || "";
         let WeaknessA = getAttrByName(attacker.id, 'weaknesses');
         let WeaknessB = getAttrByName(defender.id, 'weaknesses');
+
         //attacker wexp
         let SwordEXPA = findObjs({ characterid: attacker.id, name: "SwordEXP", type: "attribute"})[0];
         let LanceEXPA = findObjs({ characterid: attacker.id, name: "LanceEXP", type: "attribute"})[0];
@@ -1279,7 +1326,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgA;
-                        let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtA *= 3;
                         }
@@ -1373,7 +1420,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1468,7 +1515,7 @@ on('chat:message', function(msg) {
                     let weak_ch = getAttrByName(char, 'weaknesses');
                     let avo_ch = getAttrByName(char, 'avo');
                     let prov_DmgA;
-                    let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                    let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
                     if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
                         prov_MtA *= 3;
                     }
@@ -1549,7 +1596,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgA;
-                        let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtA *= 3;
                         }
@@ -1630,7 +1677,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgA;
-                        let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtA *= 3;
                         }
@@ -1718,7 +1765,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1796,7 +1843,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1871,7 +1918,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }

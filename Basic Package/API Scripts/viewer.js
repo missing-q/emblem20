@@ -53,7 +53,7 @@ on('chat:message', function(msg) {
             return;
         }
         //just get target's stats
-        let WNameB = getAttrByName(target.id, 'repeating_weapons_$0_WName') || "Empty";
+        let WNameB = attrLookup(target, "repeating_weapons_$0_WName", false) || "Empty";
         let LvB = getAttrByName(target.id, 'Level');
         let ClassB = getAttrByName(target.id, 'Class');
         let RaceB = getAttrByName(target.id, 'Species');

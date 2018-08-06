@@ -86,14 +86,14 @@ on('chat:message', function(msg) {
         let HitA = getAttrByName(staffer.id, 'hit');
         let AvoB = getAttrByName(target.id, 'avo');
         let MagA = getAttrByName(staffer.id, 'mag_total');
-        let WNameA = getAttrByName(staffer.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WTypeA = getAttrByName(staffer.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let MtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Mt')) || 0;
-        let WtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Wt')) || 0;
-        let Range1A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range2A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range2')) || 1;
+        let WNameA = attrLookup(staffer, "repeating_weapons_$0_WName", false) || "Empty";
+        let WTypeA = attrLookup(staffer, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let MtA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Mt", false)) || 0;
+        let WtA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Wt", false)) || 0;
+        let Range1A = parseInt(attrLookup(staffer, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range2A = parseInt(attrLookup(staffer, "repeating_weapons_$0_Range2", false)) || 1;
         let fIDA = getAttrByName(staffer.id, 'fid')|| "";
-        let UsesA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Uses')) || 0;
+        let UsesA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Uses", false)) || 0;
         let diff = ManhDist(selectedToken, targetToken);
         let AllegianceA = getAttrByName(staffer.id, 'all');
         let AllegianceB = getAttrByName(target.id, 'all');
@@ -715,7 +715,7 @@ on('chat:message', function(msg) {
                                 }
                                 CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal});
                                 chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>";
-                                setAttrs(user.id, {'repeating_weapons_$0_Uses': UsesA - 1})
+                                setAttrs(staffer.id, {'repeating_weapons_$0_Uses': UsesA - 1})
                                 dispHitA = "--";
                             }
                             else {
@@ -734,7 +734,7 @@ on('chat:message', function(msg) {
                                     }
                                     log(j.status);
                                     targetToken.set(j.status);
-                                    setAttrs(user.id, {'repeating_weapons_$0_Uses': UsesA - 1})
+                                    setAttrs(staffer.id, {'repeating_weapons_$0_Uses': UsesA - 1})
                                     chatstr += '<p style = "margin-bottom: 0px;">'+ j.chatmsg + '</p>';
                                     StaffEXPA = j.exp;
                                 }
