@@ -94,6 +94,7 @@ on('chat:message', function(msg) {
         let Range2A = parseInt(attrLookup(staffer, "repeating_weapons_$0_Range2", false)) || 1;
         let fIDA = getAttrByName(staffer.id, 'fid')|| "";
         let UsesA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Uses", false)) || 0;
+        let UsesAStr = attrNameLookup(staffer, "repeating_weapons_$0_Uses", false);
         let diff = ManhDist(selectedToken, targetToken);
         let AllegianceA = getAttrByName(staffer.id, 'all');
         let AllegianceB = getAttrByName(target.id, 'all');
@@ -715,7 +716,7 @@ on('chat:message', function(msg) {
                                 }
                                 CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal});
                                 chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>";
-                                setAttrs(staffer.id, {'repeating_weapons_$0_Uses': UsesA - 1})
+                                setAttrs(staffer.id, {[UsesAStr]: UsesA - 1})
                                 dispHitA = "--";
                             }
                             else {
@@ -734,7 +735,7 @@ on('chat:message', function(msg) {
                                     }
                                     log(j.status);
                                     targetToken.set(j.status);
-                                    setAttrs(staffer.id, {'repeating_weapons_$0_Uses': UsesA - 1})
+                                    setAttrs(staffer.id, {[UsesAStr]: UsesA - 1})
                                     chatstr += '<p style = "margin-bottom: 0px;">'+ j.chatmsg + '</p>';
                                     StaffEXPA = j.exp;
                                 }

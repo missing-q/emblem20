@@ -45,6 +45,45 @@ var attrLookup = function(character,name,caseSensitive){
 
 };
 
+
+//version that returns attr names
+var attrNameLookup = function(character,name,caseSensitive){
+    let match=name.match(/^(repeating_.*)_\$(\d+)_.*$/);
+    let returnval;
+    if(match){
+        let index=match[2],
+            attrMatcher=new RegExp(`^${name.replace(/_\$\d+_/,'_([-\\da-zA-Z]+)_')}$`,(caseSensitive?'i':'')),
+            createOrderKeys=[],
+            attrs=_.chain(findObjs({type:'attribute', characterid:character.id}))
+                .map((a)=>{
+                    return {attr:a,match:a.get('name').match(attrMatcher)};
+                })
+                .filter((o)=>o.match)
+                .each((o)=>createOrderKeys.push(o.match[1]))
+                .reduce((m,o)=>{ m[o.match[1]]=o.attr; return m;},{})
+                .value(),
+            sortOrderKeys = _.chain( ((findObjs({
+                type:'attribute',
+                    characterid:character.id,
+                    name: `_reporder_${match[1]}`
+                })[0]||{get:_.noop}).get('current') || '' ).split(/\s*,\s*/))
+                .intersection(createOrderKeys)
+                .union(createOrderKeys)
+                .value();
+        if(index<sortOrderKeys.length && _.has(attrs,sortOrderKeys[index])){
+            returnval = attrs[sortOrderKeys[index]];
+            if (returnval != undefined){
+                return returnval.get("name")
+            }
+            else {
+                return ""
+            }
+        }
+    }
+
+    return name;
+};
+
 //credit to Brian on the forums for this framework!
 var queue = [];
 function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
@@ -200,6 +239,10 @@ on('chat:message', function(msg) {
         }
         log(UsesA);
         log(UsesB);
+
+        let UsesAStr = attrNameLookup(attacker, "repeating_weapons_$0_Uses", false);
+        let UsesBStr = attrNameLookup(defender, "repeating_weapons_$0_Uses", false)
+
         let StrengthsA = attrLookup(attacker, "repeating_weapons_$0_Strengths", false) || "";
         let StrengthsB = attrLookup(defender, "repeating_weapons_$0_Strengths", false) || "";
         let WeaknessA = getAttrByName(attacker.id, 'weaknesses');
@@ -487,7 +530,7 @@ on('chat:message', function(msg) {
             function DecUsesA() {
                 let num = parseInt(UsesA.get("current")) - 1;
                 log(num);
-                setAttrs(attacker.id, {'repeating_weapons_$0_Uses': num})
+                setAttrs(attacker.id, {[UsesAStr]: num})
             }
             log("Is an object!");
         } else {
@@ -500,7 +543,7 @@ on('chat:message', function(msg) {
             function DecUsesB() {
                 let num = parseInt(UsesB.get("current")) - 1;
                 log(num);
-                setAttrs(defender.id, {'repeating_weapons_$0_Uses': num})
+                setAttrs(defender.id, {[UsesBStr]: num})
             }
             log("Is an object!");
         } else {
