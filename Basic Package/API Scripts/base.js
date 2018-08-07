@@ -35,9 +35,9 @@ var attrLookup = function(character,name,caseSensitive){
         }
     }
 
-    returnval = findObjs({ type:'attribute', characterid:character.id, name: name})[0];
+    returnval = getAttrByName(character.id, name)
     if (returnval != undefined){
-        return returnval.get("current")
+        return returnval
     }
     else {
         return ""
@@ -162,7 +162,7 @@ on('chat:message', function(msg) {
         let ResB = Number(getAttrByName(defender.id, 'res_total'));
 
         //Grab weapon stats
-        let WNameA = attrLookup(attacker, "repeating_weapons_$0_WName", false) || "Empty";
+        let WNameA = attrLookup(attacker,"repeating_weapons_$0_WName",false) || "Empty";
         let WNameB = attrLookup(defender, "repeating_weapons_$0_WName", false) || "Empty";
         let WTypeA = attrLookup(attacker, "repeating_weapons_$0_WType", false) || "Stones/Other";
         let WTypeB = attrLookup(defender, "repeating_weapons_$0_WType", false) || "Stones/Other";
@@ -327,7 +327,12 @@ on('chat:message', function(msg) {
             log("Attacker's weapon is usable!");
         } else {
             log("Attacker's weapon is not usable!");
-
+            log((WepUA[WepTypes.indexOf(WTypeA)] == 1));
+            log(WepUA);
+            log(WepTypes.indexOf(WTypeA))
+            log(WTypeA);
+            log(WepTypes)
+            log((WepRanksA[WepTypes.indexOf(WTypeA)].get("current") >= WRankA_num))
             CanAttackA = false;
         }
         if ((WepUB[WepTypes.indexOf(WTypeB)] == 1) && (WepRanksB[WepTypes.indexOf(WTypeB)].get("current") >= WRankB_num)){
