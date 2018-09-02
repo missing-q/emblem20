@@ -404,104 +404,111 @@ on('chat:message', function(msg) {
                 let HealmodE = parseInt(eval(obj.e_healfactor));
                 log("HealmodU is" + HealmodU);
 
-                let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
                 log(obj.u_stat_target);
                 log(obj.e_stat_target);
-                //determining the actual stat target
-                if (obj.u_stat_target || obj.e_stat_target != "none") {
-                    for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r] + "U") {
-                            StattargetU = eval(statnames[r] + "U");
-                        }
-                        if (obj.e_stat_target == statnames[r] + "E") {
-                            StattargetE = eval(statnames[r] + "E");
-                        }
-                    }
+                //determining the actual stat targets- both of them should be arrays
+
+                if (obj.u_stat_target != "none") {
+                    StattargetU = eval(obj.u_stat_target);
                 }
-                //for current HP-affecting skills
-                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
-                    StattargetU = eval(obj.u_stat_target)
-                }
-                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                log(StattargetU)
+                if (obj.e_stat_target != "none") {
                     StattargetE = eval(obj.e_stat_target);
                 }
 
-                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
-                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                let StattargetmodU = eval(obj.u_stat_targetmod); //should also be arrays
+                let StattargetmodE = eval(obj.e_stat_targetmod);
+                let STCounterU = eval(obj.u_stat_targetcounter);
+                let STCounterE = eval(obj.e_stat_targetcounter);
                 log(StattargetE);
                 log(StattargetmodE);
-                let currvlU;
-                let newvlU;
-                let currvlE;
-                let newvlE;
+                let currvlU = [];
+                let newvlU = [];
+                let currvlE = [];
+                let newvlE = [];
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
-                    currvlU = parseInt(StattargetU.get("current"));
-                    newvlU = parseInt(StattargetmodU)
-                    log(currvlU);
-                    log(newvlU)
-                    StattargetU.setWithWorker({
-                        current: currvlU + newvlU
-                    });
-                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                    for (var i in StattargetmodU){
+                        log(StattargetU);
+                        log(StattargetU[i])
+                        log(StattargetmodU[i])
+                        currvlU[i] = parseInt(StattargetU[i].get("current"));
+                        newvlU[i] = parseInt(StattargetmodU[i])
+                        log(currvlU[i]);
+                        log(newvlU[i])
+                        StattargetU[i].setWithWorker({
+                            current: currvlU[i] + newvlU[i]
+                        });
+                        log("Set U-targeted stat to "+ StattargetU[i].get("current"));
+                    }
                 }
 
                 if (obj.e_stat_target != "none" && StattargetE != undefined){
-                    currvlE = parseInt(StattargetE.get("current"));
-                    newvlE = parseInt(StattargetmodE)
-                    log(currvlE);
-                    log(newvlE)
-                    StattargetE.setWithWorker({
-                        current: currvlE + newvlE
-                    });
-                    log("Set E-targeted stat to "+ StattargetE.get("current"));
+                    for (var i in StattargetmodE){
+                        log(StattargetE);
+                        log(StattargetE[i])
+                        log(StattargetmodE[i])
+                        currvlE[i] = parseInt(StattargetE[i].get("current"));
+                        newvlE[i] = parseInt(StattargetmodE[i])
+                        log(currvlE[i]);
+                        log(newvlE[i])
+                        StattargetE[i].setWithWorker({
+                            current: currvlE[i] + newvlE[i]
+                        });
+                        log("Set E-targeted stat to "+ StattargetE[i].get("current"));
+                    }
                 }
                 //queue queue queue
                 if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
-                    if (StattargetmodU > 0){
-                        queue.push([StattargetU, "decrement", 1, 0, "staff"])
-                        log([StattargetU, "decrement", 1, 0, "staff"])
-                        log("Pushed to queue!")
-                    } else {
-                        queue.push([StattargetU, "increment", 1, 0, "staff"])
-                        log([StattargetU, "increment", 1, 0, "staff"])
-                        log("Pushed to queue!")
-                    }
-                    //check queue for repeated buff/debuffs
-                    for (var i in queue){
-                        if ((queue[i][0] == StattargetU) && (queue[i][4] == "staff") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
-                            queue.shift();
-                            i--;
-                            StattargetU.setWithWorker({
-                                current: currvlU
-                            }); //reset stat back to what it was before
-                            log("Removed repeating b/d");
+                    for (var q in StattargetU){
+                        if (StattargetmodU[q] > 0){
+                            queue.push([StattargetU[q], "decrement", STCounterU[q], 0, "combat"])
+                            log([StattargetU[q], "decrement", STCounterU[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetU[q], "increment", STCounterU[q], 0])
+                            log([StattargetU[q], "increment", STCounterU[q], 0, "combat"])
+                            log("Pushed to queue!")
                         }
-                    }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetU[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetU[q].setWithWorker({
+                                    current: currvlU[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
                     //
+                    }
                 }
-                if (obj.e_stat_target != "CurrHPU" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
-                    if (StattargetmodE> 0){
-                        queue.push([StattargetE, "decrement", 1, 0, "staff"])
-                        log([StattargetE, "decrement", 1, 0, "staff"])
-                        log("Pushed to queue!")
-                    } else {
-                        queue.push([StattargetE, "increment", 1, 0, "staff"])
-                        log([StattargetE, "increment", 1, 0, "staff"])
-                        log("Pushed to queue!")
-                    }
-                    //check queue for repeated debuffs
-                    for (var i in queue){
-                        if ((queue[i][0] == StattargetE) && (queue[i][4] == "staff") && (queue[i] != queue[queue.length - 1])){ //change the checked string for each different queuetype
-                            queue.shift();
-                            i--;
-                            StattargetE.setWithWorker({
-                                current: currvlE
-                            }); //reset stat back to what it was before
-                            log("Removed repeating b/d");
+
+                if (obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
+                    for (var q in StattargetE){
+                        if (StattargetmodE[q] > 0){
+                            queue.push([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
+                            log([StattargetE[q], "decrement", STCounterE[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetE[q], "increment", STCounterE[q], 0])
+                            log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
+                            log("Pushed to queue!")
                         }
-                    }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetE[q].setWithWorker({
+                                    current: currvlE[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
                     //
+                    }
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
@@ -593,6 +600,7 @@ on('chat:message', function(msg) {
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         let target = eval(obj.radius_target); //likewise
+                        let counter = eval(obj.radius_counter);
                         let rad_effect;
                         let def_target;
 
@@ -614,17 +622,18 @@ on('chat:message', function(msg) {
                           }
 
                           //queueeeee
-                          if (target[i] != HPcurrC) {
+                          if (target[i] != HPCurrC) {
                             if (parseInt(effect[i]) > 0){
-                                queue.push([target[i], "decrement", 1, 0, "staff-r"])
-                                log([target[i], "decrement", 1, 0, "staff-r"])
+                                queue.push([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log([target[i], "decrement", counter[i], 0, "combat-r"])
                                 log("Pushed to queue!")
                             } else {
-                                queue.push([target[i], "increment", 1, 0, "staff-r"])
-                                log([target[i], "increment", 1, 0, "staff-r"])
+                                queue.push([target[i], "increment", counter[i], 0, "combat-r"])
+                                log([target[i], "increment", counter[i], 0, "combat-r"])
                                 log("Pushed to queue!")
                             }
-                          }
+
+                            //check queue for repeated buff/debuffs
                             for (var j in queue){
                                 if ((queue[j][0] == target[i]) && (queue[j][4] == "command-r") && (j != queue.length - 1)){ //the last element should be immune since it just got pushed
                                     log(j)
@@ -636,13 +645,15 @@ on('chat:message', function(msg) {
                                     log("Removed repeating b/d");
                                 }
                             }
+
                             //
+                          }
                           //:OOOOOO
                         }
                     }
                 }
 
-                CurrHPA.setWithWorker({
+                CurrHPU.setWithWorker({
                     current: HPA
                 });
 
@@ -712,7 +723,7 @@ on('chat:message', function(msg) {
                                 StaffEXPA = j.exp;
                                 dispHealA = HPVal;
                                 for (var z in SkillsA){
-                                    Skill(staffer, target, SkillsA[z], "staff");
+                                    Skill(staffer.id, target.id, SkillsA[z], "staff");
                                 }
                                 CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal});
                                 chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>";
