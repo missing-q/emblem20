@@ -424,7 +424,7 @@ on('chat:message', function(msg) {
         }
 
         //Targeted stat
-        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+        if ( ((PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA))) && (!MagWeps.includes(WNameA)) ){
             DmgtypeA = "Physical";
             DmgA = (StrA + MtA) - DefB;
         } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
