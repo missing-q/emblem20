@@ -2102,8 +2102,8 @@ on('chat:message', function(msg) {
         log(EXPAmod);
         CurrEXP.set("current",EXPA);
         log(EXPA);
-        if (CurrEXP.get("current") >= 100){
-            CurrEXP.set("current",CurrEXP.get("current")-100);
+        while (CurrEXP.get("current") >= 100){
+            CurrEXP.set("current",CurrEXP.get("current") - 100);
             //Get growths
             LvA.set("current", parseInt(LvA.get("current")) + 1);
             let Lvstr = '';
@@ -2137,8 +2137,9 @@ on('chat:message', function(msg) {
             let ResSG = findObjs({ characterid: attacker.id, name: "Res_i", type: "attribute"})[0];
             let statslist = [HPSG,StrSG,MagSG,SklSG,SpdSG,LckSG,DefSG,ResSG];
             log(statslist);
+            log(growthslist)
             let slist = ["HP","Str","Mag","Skl","Spd","Lck","Def","Res"];
-            for (var i = 0; i < growthslist.length - 1; i++){
+            for (var i = 0; i < growthslist.length; i++){
                 gi = growthslist[i];
                 log(gi);
                 if (randomInteger(100) < gi){
