@@ -642,7 +642,6 @@ on('chat:message', function(msg) {
         }
         log(EXPAmod);
         let WEXPA = 2;
-        let none; //just in case something accidentally gets parsed
 
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
