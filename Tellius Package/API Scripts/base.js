@@ -1,5 +1,93 @@
 /*jshint esversion: 6 */
+//huge credit to The Aaron on the forums for making this function
+//properly orders repeating functions
+var attrLookup = function(character,name,caseSensitive){
+    let match=name.match(/^(repeating_.*)_\$(\d+)_.*$/);
+    let returnval;
+    if(match){
+        let index=match[2],
+            attrMatcher=new RegExp(`^${name.replace(/_\$\d+_/,'_([-\\da-zA-Z]+)_')}$`,(caseSensitive?'i':'')),
+            createOrderKeys=[],
+            attrs=_.chain(findObjs({type:'attribute', characterid:character.id}))
+                .map((a)=>{
+                    return {attr:a,match:a.get('name').match(attrMatcher)};
+                })
+                .filter((o)=>o.match)
+                .each((o)=>createOrderKeys.push(o.match[1]))
+                .reduce((m,o)=>{ m[o.match[1]]=o.attr; return m;},{})
+                .value(),
+            sortOrderKeys = _.chain( ((findObjs({
+                type:'attribute',
+                    characterid:character.id,
+                    name: `_reporder_${match[1]}`
+                })[0]||{get:_.noop}).get('current') || '' ).split(/\s*,\s*/))
+                .intersection(createOrderKeys)
+                .union(createOrderKeys)
+                .value();
+        if(index<sortOrderKeys.length && _.has(attrs,sortOrderKeys[index])){
+            returnval = attrs[sortOrderKeys[index]];
+            if (returnval != undefined){
+                return returnval.get("current")
+            }
+            else {
+                return ""
+            }
+        }
+    }
+
+    returnval = getAttrByName(character.id, name)
+    if (returnval != undefined){
+        return returnval
+    }
+    else {
+        return ""
+    }
+
+};
+
+//failsafe just in case one of the string-expressions gets evaluated incorrectly
+let none = undefined;
+
+//version that returns attr names
+var attrNameLookup = function(character,name,caseSensitive){
+    let match=name.match(/^(repeating_.*)_\$(\d+)_.*$/);
+    let returnval;
+    if(match){
+        let index=match[2],
+            attrMatcher=new RegExp(`^${name.replace(/_\$\d+_/,'_([-\\da-zA-Z]+)_')}$`,(caseSensitive?'i':'')),
+            createOrderKeys=[],
+            attrs=_.chain(findObjs({type:'attribute', characterid:character.id}))
+                .map((a)=>{
+                    return {attr:a,match:a.get('name').match(attrMatcher)};
+                })
+                .filter((o)=>o.match)
+                .each((o)=>createOrderKeys.push(o.match[1]))
+                .reduce((m,o)=>{ m[o.match[1]]=o.attr; return m;},{})
+                .value(),
+            sortOrderKeys = _.chain( ((findObjs({
+                type:'attribute',
+                    characterid:character.id,
+                    name: `_reporder_${match[1]}`
+                })[0]||{get:_.noop}).get('current') || '' ).split(/\s*,\s*/))
+                .intersection(createOrderKeys)
+                .union(createOrderKeys)
+                .value();
+        if(index<sortOrderKeys.length && _.has(attrs,sortOrderKeys[index])){
+            returnval = attrs[sortOrderKeys[index]];
+            if (returnval != undefined){
+                return returnval.get("name")
+            }
+            else {
+                return ""
+            }
+        }
+    }
+
+    return name;
+};
+
 //credit to Brian on the forums for this framework!
+var queue = [];
 function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
     let AXCoord = token1.get("left");
     let AYCoord = token1.get("top");
@@ -83,12 +171,12 @@ on('chat:message', function(msg) {
         let Chatstr = '';
 
         //Grab basic stats
-        let CurrHPA = findObjs({ characterid: attacker.id, name: "HP_current"})[0];
-        let CurrHPB = findObjs({ characterid: defender.id, name: "HP_current"})[0];
-        let CurrEXP = findObjs({ characterid: attacker.id, name: "EXP"})[0];
-        let LvA = findObjs({ characterid: attacker.id, name: "Level"})[0];
+        let CurrHPA = findObjs({ characterid: attacker.id, name: "HP_current"},{ caseInsensitive: true })[0];
+        let CurrHPB = findObjs({ characterid: defender.id, name: "HP_current"},{ caseInsensitive: true })[0];
+        let CurrEXP = findObjs({ characterid: attacker.id, name: "EXP"},{ caseInsensitive: true })[0];
+        let LvA = findObjs({ characterid: attacker.id, name: "Level"},{ caseInsensitive: true })[0];
         let InLvA = Number(LvA.get("current"));
-        let LvB = findObjs({ characterid: defender.id, name: "Level"})[0];
+        let LvB = findObjs({ characterid: defender.id, name: "Level"},{ caseInsensitive: true })[0];
         let InLvB = Number(LvB.get("current"));
         let EXPA = Number(CurrEXP.get("current"));
         let IsPromoA = getAttrByName(attacker.id, 'isPromo');
@@ -113,30 +201,32 @@ on('chat:message', function(msg) {
         let DefB = Number(getAttrByName(defender.id, 'def_total'));
         let ResA = Number(getAttrByName(attacker.id, 'res_total'));
         let ResB = Number(getAttrByName(defender.id, 'res_total'));
+        let AIsDead = false;
+        let BIsDead = false;
 
         //Grab weapon stats
-        let WNameA = getAttrByName(attacker.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WNameB = getAttrByName(defender.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WTypeA = getAttrByName(attacker.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let WTypeB = getAttrByName(defender.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Mt')) || 0;
-        let MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Mt')) || 0;
-        let WtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
-        let WtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-        let Range1A = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range1B = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range2A = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Range2')) || 1;
-        let Range2B = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Range2')) || 1;
-        let WRankA = getAttrByName(attacker.id, 'repeating_weapons_$0_WRank') || "E";
-        let WRankB = getAttrByName(defender.id, 'repeating_weapons_$0_WRank') || "E";
+        let WNameA = attrLookup(attacker,"repeating_weapons_$0_WName",false) || "Empty";
+        let WNameB = attrLookup(defender, "repeating_weapons_$0_WName", false) || "Empty";
+        let WTypeA = attrLookup(attacker, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let WTypeB = attrLookup(defender, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
+        let MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
+        let WtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Wt", false)) || 0;
+        let WtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Wt", false)) || 0;
+        let Range1A = parseInt(attrLookup(attacker, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range1B = parseInt(attrLookup(defender, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range2A = parseInt(attrLookup(attacker, "repeating_weapons_$0_Range2", false)) || 1;
+        let Range2B = parseInt(attrLookup(defender, "repeating_weapons_$0_Range2", false)) || 1;
+        let WRankA = attrLookup(attacker, "repeating_weapons_$0_WRank", false) || "E";
+        let WRankB = attrLookup(defender, "repeating_weapons_$0_WRank", false) || "E";
         let fIDA = getAttrByName(attacker.id, 'fid')|| "";
         let fIDB = getAttrByName(defender.id, 'fid')|| "";
         log(fIDA);
         log(fIDB);
         let UsesA;
         let UsesB;
-        let AOEA = getAttrByName(attacker.id, "repeating_weapons_$0_AOE");
-        let AOEB = getAttrByName(defender.id, "repeating_weapons_$0_AOE");
+        let AOEA = parseInt(attrLookup(attacker, "repeating_weapons_$0_AOE", false)) || 0;
+        let AOEB = parseInt(attrLookup(defender, "repeating_weapons_$0_AOE", false)) || 0;
         log("AOE is " + AOEA);
         log("AOE is " + AOEB);
         //check for no rows
@@ -153,10 +243,15 @@ on('chat:message', function(msg) {
         }
         log(UsesA);
         log(UsesB);
-        let StrengthsA = getAttrByName(attacker.id, "repeating_weapons_$0_Strengths") || "";
-        let StrengthsB = getAttrByName(defender.id, "repeating_weapons_$0_Strengths") || "";
+
+        let UsesAStr = attrNameLookup(attacker, "repeating_weapons_$0_Uses", false);
+        let UsesBStr = attrNameLookup(defender, "repeating_weapons_$0_Uses", false)
+
+        let StrengthsA = attrLookup(attacker, "repeating_weapons_$0_Strengths", false) || "";
+        let StrengthsB = attrLookup(defender, "repeating_weapons_$0_Strengths", false) || "";
         let WeaknessA = getAttrByName(attacker.id, 'weaknesses');
         let WeaknessB = getAttrByName(defender.id, 'weaknesses');
+
         //attacker wexp
         let SwordEXPA = findObjs({ characterid: attacker.id, name: "SwordEXP", type: "attribute"})[0];
         let LanceEXPA = findObjs({ characterid: attacker.id, name: "LanceEXP", type: "attribute"})[0];
@@ -228,6 +323,7 @@ on('chat:message', function(msg) {
 
         const WepRanksA = [SwordEXPA,LanceEXPA,AxeEXPA,BowEXPA,DaggerEXPA,GunEXPA,AnimaEXPA,LightEXPA,DarkEXPA,StoneEXPA,StaffEXPA];
         const WepRanksB = [SwordEXPB,LanceEXPB,AxeEXPB,BowEXPB,DaggerEXPB,GunEXPB,AnimaEXPB,LightEXPB,DarkEXPB,StoneEXPB,StaffEXPB];
+        const WRStr = ["SwordEXP", "LanceEXP", "AxeEXP", "BowEXP", "DaggerEXP", "GunEXP", "DarkEXP", "LightEXP", "AnimaEXP", "StoneEXP", "StaffEXP"] //for setattrs
 
         const WepUA = [SwordUA,LanceUA,AxeUA,BowUA,DaggerUA,GunUA,AnimaUA,LightUA,DarkUA,StoneUA,StaffUA];
         const WepUB = [SwordUB,LanceUB,AxeUB,BowUB,DaggerUB,GunUB,AnimaUB,LightUB,DarkUB,StoneUB,StaffUB];
@@ -244,6 +340,15 @@ on('chat:message', function(msg) {
         let CanAttackA = true;
         let CanAttackB = true;
         let AttackingAlly = false;
+        let DmgtotalA = 0;
+        let DmgtotalB = 0;
+
+        let DoubledA = false; //has the unit attacked/doubled/tripled/quad'd yet? for attack multiplier checks
+        let DoubledB = false;
+        let TripledA = false;
+        let TripledB = false;
+        let QuadedA = false;
+        let QuadedB = false;
 
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         let SkillsB = findObjs({ characterid: defender.id, type: "ability"});
@@ -269,7 +374,12 @@ on('chat:message', function(msg) {
             log("Attacker's weapon is usable!");
         } else {
             log("Attacker's weapon is not usable!");
-
+            log((WepUA[WepTypes.indexOf(WTypeA)] == 1));
+            log(WepUA);
+            log(WepTypes.indexOf(WTypeA))
+            log(WTypeA);
+            log(WepTypes)
+            log((WepRanksA[WepTypes.indexOf(WTypeA)].get("current") >= WRankA_num))
             CanAttackA = false;
         }
         if ((WepUB[WepTypes.indexOf(WTypeB)] == 1) && (WepRanksB[WepTypes.indexOf(WTypeB)].get("current") >= WRankB_num)){
@@ -281,6 +391,7 @@ on('chat:message', function(msg) {
             log(WTypeB);
             log(WepRanksB[WepTypes.indexOf(WTypeB)])
             log("Weprank of weapon: " + WRankB_num)
+            log(WRankB)
             CanAttackB = false;
         }
 
@@ -313,7 +424,7 @@ on('chat:message', function(msg) {
         }
 
         //Targeted stat
-        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+        if ( ((PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA))) && (!MagWeps.includes(WNameA)) ){
             DmgtypeA = "Physical";
             DmgA = (StrA + MtA) - DefB;
         } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
@@ -385,17 +496,19 @@ on('chat:message', function(msg) {
         if (HPA <= 0){
             CanAttackA = false;
             log("Attacker is dead")
+            AIsDead = true;
         }
         if (HPB <= 0){
             CanAttackB = false;
             log("Defender is dead")
+            BIsDead = true;
         }
         //Check for WTA
         let WIndexA = WepTypes.indexOf(WTypeA)+ 1;
         let WIndexB = WepTypes.indexOf(WTypeB)+ 1;
         let WIN = WepTypes.indexOf(WTypeA);
-        let CurrWR = WepRanksA[WIN];
-        let CWRVal = Number(CurrWR.get("current")); //Assume number because it's a numerical input
+        let CurrWR = WRStr[WIN];
+        let CWRVal = parseInt(getAttrByName(attacker.id, CurrWR));
         let WTAA;
         let WTAB;
         log(CurrWR);
@@ -422,7 +535,9 @@ on('chat:message', function(msg) {
         }
         if (typeof(UsesA) == "object"){
             function DecUsesA() {
-                UsesA.setWithWorker({current: Number(UsesA.get("current")) - 1});
+                let num = parseInt(UsesA.get("current")) - 1;
+                log(num);
+                setAttrs(attacker.id, {[UsesAStr]: num})
             }
             log("Is an object!");
         } else {
@@ -433,7 +548,9 @@ on('chat:message', function(msg) {
         }
         if (typeof(UsesB) == "object"){
             function DecUsesB() {
-                UsesB.setWithWorker({current: Number(UsesB.get("current")) - 1});
+                let num = parseInt(UsesB.get("current")) - 1;
+                log(num);
+                setAttrs(defender.id, {[UsesBStr]: num})
             }
             log("Is an object!");
         } else {
@@ -501,6 +618,8 @@ on('chat:message', function(msg) {
         let StattargetE;
         let Dmg_U;
         let Dmg_E;
+        let DisableatkA; //for attack multipliers- disables normal attacks
+        let DisableatkB;
         //exp
         if (IsPromoA == true){
             InLvA += 20;
@@ -523,7 +642,6 @@ on('chat:message', function(msg) {
         }
         log(EXPAmod);
         let WEXPA = 2;
-        let none; //just in case something accidentally gets parsed
 
         function Skill(userid,targetid,obj,triggertime) { //haha END ME
         if (typeof obj != "object"){
@@ -706,53 +824,119 @@ on('chat:message', function(msg) {
                 /* Parse damage and HP modifiers- normally eval() is incredibly dangerous and
                 usually Shouldn't Be Used Under Any Circumstance Ever, but the Roll20 API sandboxes it,
                 so I think it should be alright. Oh well!*/
-                let DamagemodU = eval(obj.u_damagemod);
+                let DamagemodU = parseInt(eval(obj.u_damagemod));
                 log("Damage mod is " + DamagemodU);
-                let DamagemodE = eval(obj.e_damagemod);
+                let DamagemodE = parseInt(eval(obj.e_damagemod));
                 let HealmodU = parseInt(eval(obj.u_healfactor));
                 let HealmodE = parseInt(eval(obj.e_healfactor));
                 log("HealmodU is" + HealmodU);
 
-                let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
                 log(obj.u_stat_target);
                 log(obj.e_stat_target);
-                //determining the actual stat target
-                if (obj.u_stat_target || obj.e_stat_target != "none") {
-                    for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r] + "U") {
-                            StattargetU = eval(statnames[r] + "U");
-                        }
-                        if (obj.e_stat_target == statnames[r] + "E") {
-                            StattargetE = eval(statnames[r] + "E");
-                        }
-                    }
+                //determining the actual stat targets- both of them should be arrays
+
+                if (obj.u_stat_target != "none") {
+                    StattargetU = eval(obj.u_stat_target);
                 }
-                //for current HP-affecting skills
-                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
-                    StattargetU = eval(obj.u_stat_target)
-                }
-                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                if (obj.e_stat_target != "none") {
                     StattargetE = eval(obj.e_stat_target);
                 }
 
-                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
-                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                let StattargetmodU = eval(obj.u_stat_targetmod); //should also be arrays
+                let StattargetmodE = eval(obj.e_stat_targetmod);
+                let STCounterU = eval(obj.u_stat_targetcounter);
+                let STCounterE = eval(obj.e_stat_targetcounter);
                 log(StattargetE);
                 log(StattargetmodE);
+                let currvlU = [];
+                let newvlU = [];
+                let currvlE = [];
+                let newvlE = [];
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
-                    StattargetU.setWithWorker({
-                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
-                    });
-                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                    for (var i in StattargetmodU){
+                        log(StattargetU);
+                        log(StattargetU[i])
+                        log(StattargetmodU[i])
+                        currvlU[i] = parseInt(StattargetU[i].get("current"));
+                        newvlU[i] = parseInt(StattargetmodU[i])
+                        log(currvlU[i]);
+                        log(newvlU[i])
+                        StattargetU[i].setWithWorker({
+                            current: currvlU[i] + newvlU[i]
+                        });
+                        log("Set U-targeted stat to "+ StattargetU[i].get("current"));
+                    }
                 }
 
                 if (obj.e_stat_target != "none" && StattargetE != undefined){
-                    StattargetE.setWithWorker({
-                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
-                    });
-                    log("Set E-targeted stat to "+ StattargetE.get("current"));
+                    for (var i in StattargetmodE){
+                        log(StattargetE);
+                        log(StattargetE[i])
+                        log(StattargetmodE[i])
+                        currvlE[i] = parseInt(StattargetE[i].get("current"));
+                        newvlE[i] = parseInt(StattargetmodE[i])
+                        log(currvlE[i]);
+                        log(newvlE[i])
+                        StattargetE[i].setWithWorker({
+                            current: currvlE[i] + newvlE[i]
+                        });
+                        log("Set E-targeted stat to "+ StattargetE[i].get("current"));
+                    }
                 }
+                //queue queue queue
+                if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
+                    for (var q in StattargetU){
+                        if (StattargetmodU[q] > 0){
+                            queue.push([StattargetU[q], "decrement", STCounterU[q], 0, "combat"])
+                            log([StattargetU[q], "decrement", STCounterU[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetU[q], "increment", STCounterU[q], 0])
+                            log([StattargetU[q], "increment", STCounterU[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetU[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetU[q].setWithWorker({
+                                    current: currvlU[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
+                }
+
+                if (obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
+                    for (var q in StattargetE){
+                        if (StattargetmodE[q] > 0){
+                            queue.push([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
+                            log([StattargetE[q], "decrement", STCounterE[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetE[q], "increment", STCounterE[q], 0])
+                            log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetE[q].setWithWorker({
+                                    current: currvlE[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
+                }
+
 
                 if (userid == attacker.id) {
                     log("Damage before is " + DmgA);
@@ -788,6 +972,14 @@ on('chat:message', function(msg) {
                 log(HPA);
                 log("wexp is "+ WEXPA);
 
+                //moved message display up
+
+                if (obj.custom_string != ""){
+                    Chatstr += '<p style = "margin-bottom: 0px;"><b style = "color: #4055df;">' + obj.custom_string + "</b></p>";
+                } else {
+                    Chatstr += '<p style = "margin-bottom: 0px;"><b style = "color: #4055df;">' + obj.name + " activated!</b></p>";
+                }
+
                 if (obj.radius != 0) {
                     //tortured screaming
                     let tokenInRadius = filterObjs(function(token) {
@@ -802,6 +994,10 @@ on('chat:message', function(msg) {
                         let HPcurrC = findObjs({
                             characterid: char,
                             name: "HP_current"
+                        })[0];
+                        let HPC = findObjs({
+                            characterid: char,
+                            name: "HP_bd"
                         })[0];
                         let StrC = findObjs({
                             characterid: char,
@@ -830,6 +1026,10 @@ on('chat:message', function(msg) {
                         let ResC = findObjs({
                             characterid: char,
                             name: "Res_bd"
+                        })[0];
+                        let MovC = findObjs({
+                            characterid: char,
+                            name: "Mov_bd"
                         })[0];
                         let HitC = findObjs({
                             characterid: char,
@@ -864,11 +1064,14 @@ on('chat:message', function(msg) {
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         let target = eval(obj.radius_target); //likewise
+                        let counter = eval(obj.radius_counter);
                         let rad_effect;
+                        let def_target;
 
                         for (var i in effect) {
                           log(target[i].get("current"))
                           rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          def_target = Number(target[i].get("current"));
                           target[i].setWithWorker({
                               current: rad_effect
                           });
@@ -881,6 +1084,35 @@ on('chat:message', function(msg) {
                           if ((target[i] == HPcurrC) && (char == defender.id)) {
                               HPB += parseInt(effect[1])
                           }
+
+                          //queueeeee
+                          if (target[i] != HPcurrC) {
+                            if (parseInt(effect[i]) > 0){
+                                queue.push([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            } else {
+                                queue.push([target[i], "increment", counter[i], 0, "combat-r"])
+                                log([target[i], "increment", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            }
+
+                            //check queue for repeated buff/debuffs
+                            for (var j in queue){
+                                if ((queue[j][0] == target[i]) && (queue[j][4] == "command-r") && (j != queue.length - 1)){ //the last element should be immune since it just got pushed
+                                    log(j)
+                                    log(queue.length - 1)
+                                    log(queue)
+                                    target[i].setWithWorker({
+                                        current: def_target
+                                    }); //reset stat back to what it was before*/
+                                    log("Removed repeating b/d");
+                                }
+                            }
+
+                            //
+                          }
+                          //:OOOOOO
                         }
                     }
                     CurrHPA.setWithWorker({
@@ -894,7 +1126,7 @@ on('chat:message', function(msg) {
                 //recursionnn
                 if (obj.children_skills != []){
                     for (var y in obj.children_skills){
-                        Child_Skill = JSON.parse(obj.children_skills[y]);
+                        Child_Skill = obj.children_skills[y];
                         Skill(userid, targetid, Child_Skill, "any"); //child implementations of preexisting skills should have the triggertime "any" as well
                     }
                 }
@@ -902,22 +1134,33 @@ on('chat:message', function(msg) {
                 //Attack multiplier for stuff like Astra
                 if (obj.attack_multiplier != 0){
                     if (userid == attacker.id){
-                        for (i = 0; i < obj.attack_multiplier; i++){
+                        let mult = obj.attack_multiplier;
+                        if (DoubledA){
+                          mult -= 1; //check if user has doubled yet
+                          if (TripledA){
+                            mult -= 1; //tripled?
+                            if (QuadedA){
+                              mult -= 1; //quadrupled?
+                            }
+                          }
+                        }
+                        for (i = 0; i < mult; i++){
 
                             if (randomInteger(100) < (HitA - AvoB)){
-                                Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits! </p>";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
                                 //Check if attack crits
                                 if (randomInteger(100) < (CritA - DdgB)){
                                     DmgA *= 3;
-                                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits! </p>";
+                                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " crits for "+ DmgA + " damage!</p>";
                                     hasCritA = true;
                                 }
                                 //No AOE checking because that's stupidly broken. >:O
                                 HPB -= DmgA;
+                                DmgtotalA += DmgA;
                                 log("Damage is " + DmgA);
                                 CurrHPB.set("current", HPB);
                                 CWRVal += 2;
-                                CurrWR.set("current",CWRVal);
+                                setAttrs(attacker.id, {[CurrWR]: CWRVal});
                                 log("Incremented weapon EXP!");
                                 DecUsesA();
                                 log("Decreased weapon uses!");
@@ -932,19 +1175,30 @@ on('chat:message', function(msg) {
                         }
 
                         DoubleA = false;
-
+                        DisableatkA = true;
                     }
                     else {
-                        for (i = 0; i < obj.attack_multiplier; i++){
+                        let mult = obj.attack_multiplier;
+                        if (DoubledB){
+                          mult -= 1; //check if user has doubled yet
+                          if (TripledB){
+                            mult -= 1; //tripled?
+                            if (QuadedB){
+                              mult -= 1; //quadrupled?
+                            }
+                          }
+                        }
+                        for (i = 0; i < mult; i++){
                             if (randomInteger(100) < (HitB - AvoA)){
-                                Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits! </p>";
+                                Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
                                 //Check if attack crits
                                 if (randomInteger(100) < (CritB - DdgA)){
                                     DmgB *= 3;
-                                    Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits!</p>";
+                                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " crits for "+ DmgB + " damage! </p>";
                                     hasCritB = true;
                                 }
                                 HPA -= DmgB;
+                                DmgtotalB += DmgB;
                                 CurrHPA.set("current", HPA);
                                 //Defender gets no WEXP to discourage turtling on EP
                                 DecUsesB();
@@ -960,13 +1214,8 @@ on('chat:message', function(msg) {
                         }
 
                         DoubleB = false;
-
+                        DisableatkB = true;
                     }
-                }
-                if (obj.custom_string != ""){
-                    Chatstr += '<p><b style = "color: #4055df;">' + obj.custom_string + "</b></p>";
-                } else {
-                    Chatstr += '<p><b style = "color: #4055df;">' + obj.name + " activated!</b></p>";
                 }
             }
 
@@ -1083,35 +1332,39 @@ on('chat:message', function(msg) {
                 log(Range1A + "-"+ Range2A);
                 diffcheckA = true;
                 if (randomInteger(100) < (HitA - AvoB)){
-                    //Check if attack crits
-                    if (randomInteger(100) < (CritA - DdgB)){
-                        DmgA *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
-                        hasCritA = true;
-                    } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
-                    }
-
                     //Battle skill trigger
                     for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
+                        Skill(attacker.id, defender.id, SkillsA[i], "during-a");
                     }
                     for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
+                        Skill(defender.id, attacker.id, SkillsB[i], "during-d");
                     }
 
-                    HPB -= DmgA;
-                    log("Damage is " + DmgA);
-                    CurrHPB.set("current", HPB);
-                    CWRVal += WEXPA;
-                    CurrWR.set("current",CWRVal);
-                    log("Incremented weapon EXP!");
-                    DecUsesA();
-                    log("Decreased weapon uses!");
-                    if (hasCritA){
-                        DmgA /= 3;
-                        hasCritA = false;
+                    if (!DisableatkA){ //no attack multipliers
+                      //Check if attack crits
+                      if (randomInteger(100) < (CritA - DdgB)){
+                          DmgA *= 3;
+                          Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
+                          hasCritA = true;
+                      } else {
+                          Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
+                      }
+
+                      HPB -= DmgA;
+                      DmgtotalA += DmgA;
+                      log("Damage is " + DmgA);
+                      CurrHPB.set("current", HPB);
+                      CWRVal += WEXPA;
+                      setAttrs(attacker.id, {[CurrWR]: CWRVal});
+                      log("Incremented weapon EXP!");
+                      DecUsesA();
+                      log("Decreased weapon uses!");
+                      if (hasCritA){
+                          DmgA /= 3;
+                          hasCritA = false;
+                      }
                     }
+
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses! </p>";
                 }
@@ -1134,7 +1387,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgA;
-                        let prov_MtA = parseInt(getAttrByName(attacker.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtA *= 3;
                         }
@@ -1165,9 +1418,12 @@ on('chat:message', function(msg) {
             Chatstr += '<p style = "margin-bottom: 0px;">' + AName +" cannot attack!</p>";
         }
 
+        Chatstr += '<p></p>'; //break between units
+
         if (HPB <= 0){
             CanAttackB = false;
-            log("Defender is dead!")
+            log("Defender is dead!");
+            BIsDead = true;
         }
 
         if (CanAttackB == true){
@@ -1175,31 +1431,34 @@ on('chat:message', function(msg) {
             if (((Range1B) <= (diff)) && ((diff) <= (Range2B))){
                 diffcheckB = true;
                 if (randomInteger(100) < (HitB - AvoA)){
-                    //Check if attack crits
-                    if (randomInteger(100) < (CritB - DdgA)){
-                        DmgB *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
-                        hasCritB = true;
-                    } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
-                    }
-
                     //battle skill trigger
                     for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
+                        Skill(defender.id, attacker.id, SkillsB[i], "during-a");
                     }
                     for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
+                        Skill(attacker.id, defender.id, SkillsA[i], "during-d");
                     }
 
-                    HPA -= DmgB;
-                    CurrHPA.set("current", HPA);
-                    //Defender gets no WEXP to discourage turtling on EP
-                    DecUsesB();
-                    log("Decreased weapon uses!");
-                    if (hasCritB){
-                        DmgB /= 3;
-                        hasCritB = false;
+                    if (!DisableatkB) {
+                      //Check if attack crits
+                      if (randomInteger(100) < (CritB - DdgA)){
+                          DmgB *= 3;
+                          Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
+                          hasCritB = true;
+                      } else {
+                          Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
+                      }
+
+                      HPA -= DmgB;
+                      DmgtotalB += DmgB;
+                      CurrHPA.set("current", HPA);
+                      //Defender gets no WEXP to discourage turtling on EP
+                      DecUsesB();
+                      log("Decreased weapon uses!");
+                      if (hasCritB){
+                          DmgB /= 3;
+                          hasCritB = false;
+                      }
                     }
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
@@ -1223,7 +1482,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1254,116 +1513,130 @@ on('chat:message', function(msg) {
             Chatstr += '<p style = "margin-bottom: 0px;">' + DName +" cannot attack!</p>";
         }
 
+        Chatstr += '<p></p>'; //break between units
+
         if (HPA <= 0){
             CanAttackA = false;
-            log("Attacker is dead!")
+            log("Attacker is dead!");
+            AIsDead = true;
         }
 
         //Attacker doubles; I don't think I should need to do usability checking for doubleattacking since it's checked within the battle calc
         if ((DoubleA === true) && (CanAttackA == true) && (diffcheckA == true)){
             //quadattacks
+            DoubledA = true;
             if (randomInteger(100) < (HitA - AvoB)){
-                //Check if attack crits
-                if (randomInteger(100) < (CritA - DdgB)){
-                    DmgA *= 3;
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
-                    hasCritA = true;
-                } else {
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
-                }
-
+                //Battle skill trigger
                 for (i in SkillsA){
-                    Skill(attacker.id, defender.id, SkillsA[i], "during");
+                    Skill(attacker.id, defender.id, SkillsA[i], "during-a");
                 }
                 for (i in SkillsB){
-                    Skill(defender.id, attacker.id, SkillsB[i], "during");
+                    Skill(defender.id, attacker.id, SkillsB[i], "during-d");
                 }
 
-                HPB -= DmgA;
-                CurrHPB.set("current", HPB);
-                CWRVal += WEXPA;
-                CurrWR.set("current",CWRVal);
-                log("Incremented weapon EXP!");
-                DecUsesA();
-                log("Decreased weapon uses!");
-                if (hasCritA){
-                    DmgA /= 3;
-                    hasCritA = false;
+                if (!DisableatkA){ //no attack multipliers
+                  //Check if attack crits
+                  if (randomInteger(100) < (CritA - DdgB)){
+                      DmgA *= 3;
+                      Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
+                      hasCritA = true;
+                  } else {
+                      Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
+                  }
+
+                  HPB -= DmgA;
+                  DmgtotalA += DmgA;
+                  log("Damage is " + DmgA);
+                  CurrHPB.set("current", HPB);
+                  CWRVal += WEXPA;
+                  setAttrs(attacker.id, {[CurrWR]: CWRVal});
+                  log("Incremented weapon EXP!");
+                  DecUsesA();
+                  log("Decreased weapon uses!");
+                  if (hasCritA){
+                      DmgA /= 3;
+                      hasCritA = false;
+                  }
                 }
             } else {
                 Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
             }
-            //radius
             if (AOEA != 0){
-                    let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
-                        else return true;
-                    });
-                    for (i in tokenInRadius){
-                        let char = tokenInRadius[i].get("represents");
-                        let char_name = tokenInRadius[i].get("name");
-                        let HPchar = findObjs({
-                            characterid: char,
-                            name: "HP_current"
-                        })[0];
-                        let def_ch = Number(getAttrByName(char, 'def_total'));
-                        let res_ch = Number(getAttrByName(char, 'res_total'));
-                        let weak_ch = getAttrByName(char, 'weaknesses');
-                        let avo_ch = getAttrByName(char, 'avo');
-                        let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
-                            prov_MtB *= 3;
-                        }
-                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
-                            prov_DmgB = (StrB + MtB) - def_ch;
-                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
-                            prov_DmgB = (MagB + MtB) - res_ch;
-                        }
-                        else if (WTypeB == "Firearm/Taneg.") {
-                            prov_DmgB = MtB - def_ch;
-                        }
-                        if (prov_DmgB < 0){
-                            prov_DmgB = 0;
-                        }
-                        if (randomInteger(100) < (HitB - avo_ch)){
-                            HPchar.setWithWorker({
-                                current: HPchar.get("current") - prov_DmgB
-                            });
-                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
-                        }
+                let tokenInRadius = filterObjs(function(token) {
+                    if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                    else return true;
+                });
+                for (i in tokenInRadius){
+                    let char = tokenInRadius[i].get("represents");
+                    let char_name = tokenInRadius[i].get("name");
+                    let HPchar = findObjs({
+                        characterid: char,
+                        name: "HP_current"
+                    })[0];
+                    let def_ch = Number(getAttrByName(char, 'def_total'));
+                    let res_ch = Number(getAttrByName(char, 'res_total'));
+                    let weak_ch = getAttrByName(char, 'weaknesses');
+                    let avo_ch = getAttrByName(char, 'avo');
+                    let prov_DmgA;
+                    let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
+                    if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
+                        prov_MtA *= 3;
+                    }
+                    if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+                        prov_DmgA = (StrA + MtA) - def_ch;
+                    } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
+                        prov_DmgA = (MagA + MtA) - res_ch;
+                    }
+                    else if (WTypeA == "Firearm/Taneg.") {
+                        prov_DmgA = MtA - def_ch;
+                    }
+                    if (prov_DmgA < 0){
+                        prov_DmgA = 0;
+                    }
+                    if (randomInteger(100) < (HitA - avo_ch)){
+                        HPchar.setWithWorker({
+                            current: HPchar.get("current") - prov_DmgA
+                        });
+                        Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " AOE damage!</p>";
                     }
                 }
+            }
 
             if (QuadA === true){
                 //tripleattacks
                 if (randomInteger(100) < (HitA - AvoB)){
-                    //Check if attack crits
-                    if (randomInteger(100) < (CritA - DdgB)){
-                        DmgA *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
-                        hasCritA = true;
-                    } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
-                    }
-
+                    TripledA = true;
+                    //Battle skill trigger
                     for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
+                        Skill(attacker.id, defender.id, SkillsA[i], "during-a");
                     }
                     for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
+                        Skill(defender.id, attacker.id, SkillsB[i], "during-d");
                     }
 
-                    HPB -= DmgA;
-                    CurrHPB.set("current", HPB);
-                    CWRVal += WEXPA;
-                    CurrWR.set("current",CWRVal);
-                    log("Incremented weapon EXP!");
-                    DecUsesA();
-                    log("Decreased weapon uses!");
-                    if (hasCritA){
-                        DmgA /= 3;
-                        hasCritA = false;
+                    if (!DisableatkA){ //no attack multipliers
+                      //Check if attack crits
+                      if (randomInteger(100) < (CritA - DdgB)){
+                          DmgA *= 3;
+                          Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
+                          hasCritA = true;
+                      } else {
+                          Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
+                      }
+
+                      HPB -= DmgA;
+                      DmgtotalA += DmgA;
+                      log("Damage is " + DmgA);
+                      CurrHPB.set("current", HPB);
+                      CWRVal += WEXPA;
+                      setAttrs(attacker.id, {[CurrWR]: CWRVal});
+                      log("Incremented weapon EXP!");
+                      DecUsesA();
+                      log("Decreased weapon uses!");
+                      if (hasCritA){
+                          DmgA /= 3;
+                          hasCritA = false;
+                      }
                     }
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
@@ -1371,7 +1644,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1385,53 +1658,58 @@ on('chat:message', function(msg) {
                         let res_ch = Number(getAttrByName(char, 'res_total'));
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
-                        let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
-                            prov_MtB *= 3;
+                        let prov_DmgA;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
+                        if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtA *= 3;
                         }
-                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
-                            prov_DmgB = (StrB + MtB) - def_ch;
-                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
-                            prov_DmgB = (MagB + MtB) - res_ch;
+                        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+                            prov_DmgA = (StrA + MtA) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
+                            prov_DmgA = (MagA + MtA) - res_ch;
                         }
-                        else if (WTypeB == "Firearm/Taneg.") {
-                            prov_DmgB = MtB - def_ch;
+                        else if (WTypeA == "Firearm/Taneg.") {
+                            prov_DmgA = MtA - def_ch;
                         }
-                        if (prov_DmgB < 0){
-                            prov_DmgB = 0;
+                        if (prov_DmgA < 0){
+                            prov_DmgA = 0;
                         }
-                        if (randomInteger(100) < (HitB - avo_ch)){
+                        if (randomInteger(100) < (HitA - avo_ch)){
                             HPchar.setWithWorker({
-                                current: HPchar.get("current") - prov_DmgB
+                                current: HPchar.get("current") - prov_DmgA
                             });
-                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " AOE damage!</p>";
                         }
                     }
                 }
 
                 //quadattacks
                 if (randomInteger(100) < (HitA - AvoB)){
+                  QuadedA = true;
+                  //Battle skill trigger
+                  for (i in SkillsA){
+                      Skill(attacker.id, defender.id, SkillsA[i], "during-a");
+                  }
+                  for (i in SkillsB){
+                      Skill(defender.id, attacker.id, SkillsB[i], "during-d");
+                  }
+
+                  if (!DisableatkA){ //no attack multipliers
                     //Check if attack crits
                     if (randomInteger(100) < (CritA - DdgB)){
                         DmgA *= 3;
                         Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " crits for " + DmgA + " damage!</p>";
                         hasCritA = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " hits for " + DmgA + " damage!</p>";
-                    }
-
-                    for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
-                    }
-                    for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + AName + " hits for "+ DmgA + " damage!</p>";
                     }
 
                     HPB -= DmgA;
+                    DmgtotalA += DmgA;
+                    log("Damage is " + DmgA);
                     CurrHPB.set("current", HPB);
                     CWRVal += WEXPA;
-                    CurrWR.set("current",CWRVal);
+                    setAttrs(attacker.id, {[CurrWR]: CWRVal});
                     log("Incremented weapon EXP!");
                     DecUsesA();
                     log("Decreased weapon uses!");
@@ -1439,6 +1717,7 @@ on('chat:message', function(msg) {
                         DmgA /= 3;
                         hasCritA = false;
                     }
+                  }
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + AName+ " misses!</p>";
                 }
@@ -1446,7 +1725,7 @@ on('chat:message', function(msg) {
                 //radius
                 if (AOEA != 0){
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(targetToken,token) > AOEA || getAttrByName(token.get('represents'), 'all') == getAttrByName(selectedToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
                         else return true;
                     });
                     for (i in tokenInRadius){
@@ -1460,33 +1739,35 @@ on('chat:message', function(msg) {
                         let res_ch = Number(getAttrByName(char, 'res_total'));
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
-                        let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
-                            prov_MtB *= 3;
+                        let prov_DmgA;
+                        let prov_MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
+                        if ( ( StrengthsA.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsA.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsA.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsA.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsA.includes("Monster") && weak_ch.includes("Monster")) ){
+                            prov_MtA *= 3;
                         }
-                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
-                            prov_DmgB = (StrB + MtB) - def_ch;
-                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
-                            prov_DmgB = (MagB + MtB) - res_ch;
+                        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+                            prov_DmgA = (StrA + MtA) - def_ch;
+                        } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
+                            prov_DmgA = (MagA + MtA) - res_ch;
                         }
-                        else if (WTypeB == "Firearm/Taneg.") {
-                            prov_DmgB = MtB - def_ch;
+                        else if (WTypeA == "Firearm/Taneg.") {
+                            prov_DmgA = MtA - def_ch;
                         }
-                        if (prov_DmgB < 0){
-                            prov_DmgB = 0;
+                        if (prov_DmgA < 0){
+                            prov_DmgA = 0;
                         }
-                        if (randomInteger(100) < (HitB - avo_ch)){
+                        if (randomInteger(100) < (HitA - avo_ch)){
                             HPchar.setWithWorker({
-                                current: HPchar.get("current") - prov_DmgB
+                                current: HPchar.get("current") - prov_DmgA
                             });
-                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
+                            Chatstr += '<p style = "margin-bottom: 0px;">'+ AName+ " hits " + char_name + " for " + prov_DmgA + " AOE damage!</p>";
                         }
                     }
                 }
                 //
             }
         }
+
+        Chatstr += '<p></p>'; //break between units
 
         if (HPB <= 0){
             CanAttackB = false;
@@ -1496,30 +1777,36 @@ on('chat:message', function(msg) {
         if ((DoubleB === true) && (CanAttackB == true) && (diffcheckB == true)){
             //doubleattacks
             if (randomInteger(100) < (HitB - AvoA)){
+              DoubledB = true;
+              //battle skill trigger
+              for (i in SkillsB){
+                  Skill(defender.id, attacker.id, SkillsB[i], "during-a");
+              }
+              for (i in SkillsA){
+                  Skill(attacker.id, defender.id, SkillsA[i], "during-d");
+              }
+
+              if (!DisableatkB) {
                 //Check if attack crits
                 if (randomInteger(100) < (CritB - DdgA)){
                     DmgB *= 3;
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
+                    Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
                     hasCritB = true;
                 } else {
-                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
-                }
-
-                for (i in SkillsB){
-                    Skill(defender.id, attacker.id, SkillsB[i], "during");
-                }
-                for (i in SkillsA){
-                    Skill(attacker.id, defender.id, SkillsA[i], "during");
+                    Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
                 }
 
                 HPA -= DmgB;
+                DmgtotalB += DmgB;
                 CurrHPA.set("current", HPA);
+                //Defender gets no WEXP to discourage turtling on EP
                 DecUsesB();
                 log("Decreased weapon uses!");
                 if (hasCritB){
                     DmgB /= 3;
                     hasCritB = false;
                 }
+              }
             } else {
                 Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
             }
@@ -1541,7 +1828,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1566,32 +1853,38 @@ on('chat:message', function(msg) {
                 }
 
             if (QuadB === true){
+              TripledB = true;
                 //tripleattack
                 if (randomInteger(100) < (HitB - AvoA)){
+                  //battle skill trigger
+                  for (i in SkillsB){
+                      Skill(defender.id, attacker.id, SkillsB[i], "during-a");
+                  }
+                  for (i in SkillsA){
+                      Skill(attacker.id, defender.id, SkillsA[i], "during-d");
+                  }
+
+                  if (!DisableatkB) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
+                        Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
                         hasCritB = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
-                    }
-
-                    for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
-                    }
-                    for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
                     }
 
                     HPA -= DmgB;
+                    DmgtotalB += DmgB;
                     CurrHPA.set("current", HPA);
+                    //Defender gets no WEXP to discourage turtling on EP
                     DecUsesB();
                     log("Decreased weapon uses!");
                     if (hasCritB){
                         DmgB /= 3;
                         hasCritB = false;
                     }
+                  }
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
                 }
@@ -1613,7 +1906,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1639,21 +1932,36 @@ on('chat:message', function(msg) {
 
                 //quad-attack
                 if (randomInteger(100) < (HitB - AvoA)){
+                  QuadedB = true;
+                  //battle skill trigger
+                  for (i in SkillsB){
+                      Skill(defender.id, attacker.id, SkillsB[i], "during-a");
+                  }
+                  for (i in SkillsA){
+                      Skill(attacker.id, defender.id, SkillsA[i], "during-d");
+                  }
+
+                  if (!DisableatkB) {
                     //Check if attack crits
                     if (randomInteger(100) < (CritB - DdgA)){
                         DmgB *= 3;
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " crits for " + DmgB + " damage!</p>";
+                        Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " crits for " + DmgB + " damage!</p>";
                         hasCritB = true;
                     } else {
-                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " hits for " + DmgB + " damage!</p>";
+                        Chatstr += '<p style = "margin-bottom: 0px;">' + DName + " hits for "+ DmgB + " damage! </p>";
                     }
 
-                    for (i in SkillsB){
-                        Skill(defender.id, attacker.id, SkillsB[i], "during");
+                    HPA -= DmgB;
+                    DmgtotalB += DmgB;
+                    CurrHPA.set("current", HPA);
+                    //Defender gets no WEXP to discourage turtling on EP
+                    DecUsesB();
+                    log("Decreased weapon uses!");
+                    if (hasCritB){
+                        DmgB /= 3;
+                        hasCritB = false;
                     }
-                    for (i in SkillsA){
-                        Skill(attacker.id, defender.id, SkillsA[i], "during");
-                    }
+                  }
 
                     //radius
                     if (AOEB != 0){
@@ -1673,7 +1981,7 @@ on('chat:message', function(msg) {
                         let weak_ch = getAttrByName(char, 'weaknesses');
                         let avo_ch = getAttrByName(char, 'avo');
                         let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
+                        let prov_MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
                         if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
                             prov_MtB *= 3;
                         }
@@ -1695,59 +2003,9 @@ on('chat:message', function(msg) {
                             Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
                         }
                     }
-                }
-
-                    HPA -= DmgB;
-                    CurrHPA.set("current", HPA);
-                    DecUsesB();
-                    log("Decreased weapon uses!");
-                    if (hasCritB){
-                        DmgB /= 3;
-                        hasCritB = false;
-                    }
+                  }
                 } else {
                     Chatstr += '<p style = "margin-bottom: 0px;">' + DName+ " misses!</p>";
-                }
-                //radius
-                if (AOEB != 0){
-                    let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(selectedToken,token) > AOEB || getAttrByName(token.get('represents'), 'all') == getAttrByName(targetToken.get('represents'), 'all') || selectedToken.get("represents") == token.get("represents") || targetToken.get("represents") == token.get("represents") ) return false;
-                        else return true;
-                    });
-                    for (i in tokenInRadius){
-                        let char = tokenInRadius[i].get("represents");
-                        let char_name = tokenInRadius[i].get("name");
-                        let HPchar = findObjs({
-                            characterid: char,
-                            name: "HP_current"
-                        })[0];
-                        let def_ch = Number(getAttrByName(char, 'def_total'));
-                        let res_ch = Number(getAttrByName(char, 'res_total'));
-                        let weak_ch = getAttrByName(char, 'weaknesses');
-                        let avo_ch = getAttrByName(char, 'avo');
-                        let prov_DmgB;
-                        let prov_MtB = parseInt(getAttrByName(defender.id, 'repeating_weapons_$0_Wt')) || 0;
-                        if ( ( StrengthsB.includes("Beast") && weak_ch.includes("Beast")) || ( StrengthsB.includes("Flier") && weak_ch.includes("Flier")) || ( StrengthsB.includes("Dragon") && weak_ch.includes("Dragon")) || ( StrengthsB.includes("Armor") && weak_ch.includes("Armor")) || ( StrengthsB.includes("Monster") && weak_ch.includes("Monster")) ){
-                            prov_MtB *= 3;
-                        }
-                        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
-                            prov_DmgB = (StrB + MtB) - def_ch;
-                        } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
-                            prov_DmgB = (MagB + MtB) - res_ch;
-                        }
-                        else if (WTypeB == "Firearm/Taneg.") {
-                            prov_DmgB = MtB - def_ch;
-                        }
-                        if (prov_DmgB < 0){
-                            prov_DmgB = 0;
-                        }
-                        if (randomInteger(100) < (HitB - avo_ch)){
-                            HPchar.setWithWorker({
-                                current: HPchar.get("current") - prov_DmgB
-                            });
-                            Chatstr += '<p style = "margin-bottom: 0px;">'+ DName+ " hits " + char_name + " for " + prov_DmgB + " damage!</p>";
-                        }
-                    }
                 }
 
             }
@@ -1758,6 +2016,14 @@ on('chat:message', function(msg) {
         }
         for (i in SkillsB){
             Skill(defender.id, attacker.id, SkillsB[i], "after");
+        }
+
+        //WEXP cap checking because sheetworkers is being stupid >:O
+        if (CWRVal > 255){
+            setAttrs(attacker.id, {[CurrWR]: 255});
+        }
+        if (BIsDead && CanAttackA){
+            EXPA += 15; //EXP bonus for killing enemies
         }
 
         let timesA = "";
@@ -1823,6 +2089,11 @@ on('chat:message', function(msg) {
 
                 '<div style = "height: 1px; background-color: #353535; width: 70%; margin: 0 auto; margin-bottom: 4px;"></div>' + //--
                 '<div style = "margin: 0 auto; width: 70%;">' + Chatstr + '</div>' + //--
+                '<div style = "height: 1px; background-color: #353535; width: 70%; margin: 0 auto; margin-bottom: 4px;"></div>' + //--
+                '<div style = "margin: 0 auto; width: 70%">'  + //--
+                '<p style = "margin-bottom: 0px;">' + AName + ' dealt ' + DmgtotalA + ' damage! ' + //--
+                '<p style = "margin-bottom: 0px;">' + DName + ' dealt ' + DmgtotalB + ' damage! ' + //---
+                '</div>'  + //--
             '</div>'
         );
         //Calculate EXP; commented out for the test
@@ -1830,8 +2101,8 @@ on('chat:message', function(msg) {
         log(EXPAmod);
         CurrEXP.set("current",EXPA);
         log(EXPA);
-        if (CurrEXP.get("current") >= 100){
-            CurrEXP.set("current",CurrEXP.get("current")-100);
+        while (CurrEXP.get("current") >= 100){
+            CurrEXP.set("current",CurrEXP.get("current") - 100);
             //Get growths
             LvA.set("current", parseInt(LvA.get("current")) + 1);
             let Lvstr = '';
@@ -1865,8 +2136,9 @@ on('chat:message', function(msg) {
             let ResSG = findObjs({ characterid: attacker.id, name: "Res_i", type: "attribute"})[0];
             let statslist = [HPSG,StrSG,MagSG,SklSG,SpdSG,LckSG,DefSG,ResSG];
             log(statslist);
+            log(growthslist)
             let slist = ["HP","Str","Mag","Skl","Spd","Lck","Def","Res"];
-            for (var i = 0; i < growthslist.length - 1; i++){
+            for (var i = 0; i < growthslist.length; i++){
                 gi = growthslist[i];
                 log(gi);
                 if (randomInteger(100) < gi){
@@ -2065,45 +2337,110 @@ on("change:campaign:turnorder", function(turn) {
                 let HealmodU = parseInt(eval(obj.u_healfactor));
                 log("HealmodU is" + HealmodU);
 
-                let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
                 log(obj.u_stat_target);
                 log(obj.e_stat_target);
-                //determining the actual stat target
-                if (obj.u_stat_target || obj.e_stat_target != "none") {
-                    for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r] + "U") {
-                            StattargetU = eval(statnames[r] + "U");
-                        }
-                        if (obj.e_stat_target == statnames[r] + "E") {
-                            StattargetE = eval(statnames[r] + "E");
-                        }
-                    }
-                }
-                //for current HP-affecting skills
-                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
+                //determining the actual stat targets- both of them should be arrays
+
+                if (obj.u_stat_target != "none") {
                     StattargetU = eval(obj.u_stat_target);
                 }
-                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                if (obj.e_stat_target != "none") {
                     StattargetE = eval(obj.e_stat_target);
                 }
 
-                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
-                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                let StattargetmodU = eval(obj.u_stat_targetmod); //should also be arrays
+                let StattargetmodE = eval(obj.e_stat_targetmod);
+                let STCounterU = eval(obj.u_stat_targetcounter);
+                let STCounterE = eval(obj.e_stat_targetcounter);
                 log(StattargetE);
                 log(StattargetmodE);
+                let currvlU = [];
+                let newvlU = [];
+                let currvlE = [];
+                let newvlE = [];
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
-                    StattargetU.setWithWorker({
-                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
-                    });
-                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                    for (var i in StattargetmodU){
+                        log(StattargetU);
+                        log(StattargetU[i])
+                        log(StattargetmodU[i])
+                        currvlU[i] = parseInt(StattargetU[i].get("current"));
+                        newvlU[i] = parseInt(StattargetmodU[i])
+                        log(currvlU[i]);
+                        log(newvlU[i])
+                        StattargetU[i].setWithWorker({
+                            current: currvlU[i] + newvlU[i]
+                        });
+                        log("Set U-targeted stat to "+ StattargetU[i].get("current"));
+                    }
                 }
 
                 if (obj.e_stat_target != "none" && StattargetE != undefined){
-                    StattargetE.setWithWorker({
-                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
-                    });
-                    log("Set E-targeted stat to "+ StattargetE.get("current"));
+                    for (var i in StattargetmodE){
+                        log(StattargetE);
+                        log(StattargetE[i])
+                        log(StattargetmodE[i])
+                        currvlE[i] = parseInt(StattargetE[i].get("current"));
+                        newvlE[i] = parseInt(StattargetmodE[i])
+                        log(currvlE[i]);
+                        log(newvlE[i])
+                        StattargetE[i].setWithWorker({
+                            current: currvlE[i] + newvlE[i]
+                        });
+                        log("Set E-targeted stat to "+ StattargetE[i].get("current"));
+                    }
+                }
+                //queue queue queue
+                if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
+                    for (var q in StattargetU){
+                        if (StattargetmodU[q] > 0){
+                            queue.push([StattargetU[q], "decrement", STCounterU[q], 0, "combat"])
+                            log([StattargetU[q], "decrement", STCounterU[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetU[q], "increment", STCounterU[q], 0])
+                            log([StattargetU[q], "increment", STCounterU[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetU[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetU[q].setWithWorker({
+                                    current: currvlU[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
+                }
+
+                if (obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
+                    for (var q in StattargetE){
+                        if (StattargetmodE[q] > 0){
+                            queue.push([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
+                            log([StattargetE[q], "decrement", STCounterE[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetE[q], "increment", STCounterE[q], 0])
+                            log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetE[q].setWithWorker({
+                                    current: currvlE[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
@@ -2123,6 +2460,10 @@ on("change:campaign:turnorder", function(turn) {
                         let HPcurrC = findObjs({
                             characterid: char,
                             name: "HP_current"
+                        })[0];
+                        let HPC = findObjs({
+                            characterid: char,
+                            name: "HP_bd"
                         })[0];
                         let StrC = findObjs({
                             characterid: char,
@@ -2151,6 +2492,10 @@ on("change:campaign:turnorder", function(turn) {
                         let ResC = findObjs({
                             characterid: char,
                             name: "Res_bd"
+                        })[0];
+                        let MovC = findObjs({
+                            characterid: char,
+                            name: "Mov_bd"
                         })[0];
                         let HitC = findObjs({
                             characterid: char,
@@ -2185,11 +2530,14 @@ on("change:campaign:turnorder", function(turn) {
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         let target = eval(obj.radius_target); //likewise
+                        let counter = eval(obj.radius_counter);
                         let rad_effect;
+                        let def_target;
 
                         for (var i in effect) {
                           log(target[i].get("current"))
                           rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          def_target = Number(target[i].get("current"));
                           target[i].setWithWorker({
                               current: rad_effect
                           });
@@ -2202,6 +2550,35 @@ on("change:campaign:turnorder", function(turn) {
                           if ((target[i] == HPcurrC) && (char == defender.id)) {
                               HPB += parseInt(effect[1])
                           }
+
+                          //queueeeee
+                          if (target[i] != HPcurrC) {
+                            if (parseInt(effect[i]) > 0){
+                                queue.push([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            } else {
+                                queue.push([target[i], "increment", counter[i], 0, "combat-r"])
+                                log([target[i], "increment", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            }
+
+                            //check queue for repeated buff/debuffs
+                            for (var j in queue){
+                                if ((queue[j][0] == target[i]) && (queue[j][4] == "command-r") && (j != queue.length - 1)){ //the last element should be immune since it just got pushed
+                                    log(j)
+                                    log(queue.length - 1)
+                                    log(queue)
+                                    target[i].setWithWorker({
+                                        current: def_target
+                                    }); //reset stat back to what it was before*/
+                                    log("Removed repeating b/d");
+                                }
+                            }
+
+                            //
+                          }
+                          //:OOOOOO
                         }
                     }
                 }

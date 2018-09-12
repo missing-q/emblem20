@@ -68,14 +68,8 @@ on('chat:message', function(msg) {
         let HPcurrent = findObjs({ characterid: user.id, name: "HP_current", type: "attribute"})[0];
         let Userclass = findObjs({ characterid: user.id, name: "Class", type: "attribute"})[0];
 
-        let Item_Name0 = findObjs({ characterid: user.id, name: "item_name0", type: "attribute"})[0];
-        let Item_Name1 = findObjs({ characterid: user.id, name: "item_name1", type: "attribute"})[0];
-        let Item_Name2 = findObjs({ characterid: user.id, name: "item_name2", type: "attribute"})[0];
-        let Item_Uses0 = findObjs({ characterid: user.id, name: "item_uses0", type: "attribute"})[0];
-        let Item_Uses1 = findObjs({ characterid: user.id, name: "item_uses1", type: "attribute"})[0];
-        let Item_Uses2 = findObjs({ characterid: user.id, name: "item_uses2", type: "attribute"})[0];
-        itemuses = [Item_Uses0,Item_Uses1,Item_Uses2]
-        itemnames = [Item_Name0,Item_Name1,Item_Name2]
+        let itemuses = ["item_uses0", "item_uses1", "item_uses2"]
+        let itemnames = ["item_name0", "item_name1", "item_name2"]
         log(itemuses)
         log(itemnames)
         //All items as objects QnQ
@@ -314,10 +308,28 @@ on('chat:message', function(msg) {
                     Itemstr += '<p style = "margin-bottom: 0px;">' + j.desc + '</p>'
                 }
                 if (j.type == "temp_statbooster"){
+                    let curr = parseInt(j.target.get("current"));
                     j.target.setWithWorker({
-                        current: parseInt(j.target.get("current")) + j.effect
+                        current: curr + j.effect
                     });
                     Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' temporarily increased by '+ j.effect +'!</p>'
+                    queue.push([j.target, "decrement", 1, 0, "item"]);
+                    log([j.target, "decrement", 1, 0, "item"])
+                    log("Pushed to queue!")
+
+                    //
+                    for (var i in queue){
+                        if ((queue[i][0] == j.target) && (queue[i][4] == "item") && (queue[i] != queue[queue.length - 1])){ //change the checked string for each different queuetype
+                            queue.shift();
+                            i--;
+                            j.target.setWithWorker({
+                                current: curr
+                            }); //reset stat back to what it was before
+                            log("Removed repeating b/d");
+                            Itemstr += '<p style = "margin-bottom: 0px;">' + j.targetstr + ' cannot be increased any more! </p>'
+                        }
+                    }
+                    //
                 }
                 if (j.type == "statbooster"){
                     j.target.setWithWorker({
@@ -346,17 +358,18 @@ on('chat:message', function(msg) {
         }
         //decrease uses
         for (var i in itemnames){
-            log(i)
-            log(itemnames[i])
-            if (itemnames[i] != null){ //no object assigned checking
-                if (itemnames[i].get("current") == item){
-                    itemuses[i].setWithWorker({
-                        current: parseInt(itemuses[i].get("current")) - 1
-                    });
-                    if (itemuses[i].get("current") == 0){
-                        itemnames[i].setWithWorker({
-                            current: ""
-                        });
+            let itemname_get = getAttrByName(user.id, itemnames[i]);
+            let itemuses_get = getAttrByName(user.id, itemuses[i]);
+            let names_i = itemnames[i]
+            let uses_i = itemuses[i]
+            log(uses_i)
+            if (itemname_get != null){ //no object assigned checking
+                if (itemname_get == item){
+                    let num = itemuses_get - 1
+                    log(num)
+                    setAttrs(user.id, {[uses_i]: num})
+                    if (num <= 0){
+                        setAttrs(user.id, {[names_i]: ""})
                     }
                 }
             }
