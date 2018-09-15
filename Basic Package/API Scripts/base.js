@@ -2448,8 +2448,15 @@ on("change:campaign:turnorder", function(turn) {
 
                 if (obj.radius != 0) {
                     //tortured screaming
+                    let allc;
+                    if (obj.radius_allegiance == "enemy"){
+                        allc = true;
+                    } else {
+                        allc = false;
+                    }
+                    log (allc)
                     let tokenInRadius = filterObjs(function(token) {
-                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken, token) > obj.radius || token.get("represents") == Usertoken.get("represents")) return false;
+                        if ((token.get('type') !== 'graphic' || token.get('subtype') !== 'token' || token.get('represents') == "") || ManhDist(Usertoken, token) > obj.radius || token.get("represents") == Usertoken.get("represents") || (getAttrByName(token.get('represents'), 'all') != getAttrByName(Usertoken.get('represents'), 'all')) != allc ) return false;
                         else return true;
                     });
                     log("Tokens in radius are: ")
@@ -2461,6 +2468,7 @@ on("change:campaign:turnorder", function(turn) {
                             characterid: char,
                             name: "HP_current"
                         })[0];
+                        log(HPcurrC)
                         let HPC = findObjs({
                             characterid: char,
                             name: "HP_bd"
@@ -2541,15 +2549,8 @@ on("change:campaign:turnorder", function(turn) {
                           target[i].setWithWorker({
                               current: rad_effect
                           });
+                          log("target is")
                           log(target[i].get("current"))
-
-                          if ((target[i] == HPcurrC) && (char == attacker.id)) {
-                              HPA += parseInt(effect[1])
-                          }
-
-                          if ((target[i] == HPcurrC) && (char == defender.id)) {
-                              HPB += parseInt(effect[1])
-                          }
 
                           //queueeeee
                           if (target[i] != HPcurrC) {
