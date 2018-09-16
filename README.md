@@ -2,7 +2,7 @@
 
 ## What is Emblem20? ##
 
-Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios'](https://reddit.com/user/xeohelios) [Fire Emblem Tabletop system](https://www.dropbox.com/sh/fvib0sh0o4fqt8d/AACJ66fUDtxL5atM5-ZcE8Ypa?dl=0), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! As of now, Emblem20 *is* live on both the [Roll20 Character Sheets](https://github.com/Roll20/roll20-character-sheets) repository and the [Roll20 API Scripts Repository](https://github.com/missing-q/roll20-api-scripts), and can be added to a game on the main site. However, I can't guarantee those will always be 100% up-to-date, as pull requests only really get merged around Wednesday or so and I'm constantly making changes and updating things, etc. General rule of thumb is that this repository will have the newest updates, but the version on Roll20 will be the easiest to add to your game (and the most stable, probably). 
+Emblem20 is a system of scripts and sheets built for Roll20 for [Xeohelios'](https://reddit.com/user/xeohelios) [Fire Emblem Tabletop system](https://www.dropbox.com/sh/fvib0sh0o4fqt8d/AACJ66fUDtxL5atM5-ZcE8Ypa?dl=0), automating most of the complicated calculations that go into one round of combat. This means that you can play fast-paced, full-scale Fire Emblem tabletop campaigns with your friends! As of now, Emblem20 *is* live on both the [Roll20 Character Sheets](https://github.com/Roll20/roll20-character-sheets) repository and the [Roll20 API Scripts Repository](https://github.com/missing-q/roll20-api-scripts), and can be added to a game on the main site. However, I can't guarantee those will always be 100% up-to-date, as pull requests only really get merged around Wednesday or so and I'm constantly making changes and updating things, etc. General rule of thumb is that this repository will have the newest updates, but the version on Roll20 will be the easiest to add to your game (and the most stable, probably).
 
 We also have a [Discord server!](https://discord.gg/KJVZWtn) Check it out!
 
@@ -63,6 +63,10 @@ Now that it's up on Roll20, you can easily add Emblem20 to your game! Be warned,
 **Modify-Stats**\*
 
 `!stats @{selected|token_id} ?{Hit Modifier: @{selected|hitmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Crit Modifier: @{selected|critmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Avoid Modifier: @{selected|avomod} +|0|5|10|15|20|-20|-15|-10|-5} ?{Dodge Modifier: @{selected|ddgmod} + |0|5|10|15|20|-20|-15|-10|-5} ?{Damage Modifier: @{selected|dmgmod} + |0|1|2|3|4|-1|-2|-3|-4}`
+
+**EXP**
+
+`!exp @{selected|token_id} ?{Add EXP }`
 
 _*I suggest making this one only viewable by the GM, since they'll be doing a lot of background work with this macro._
 
