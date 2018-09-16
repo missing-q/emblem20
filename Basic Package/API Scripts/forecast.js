@@ -299,7 +299,7 @@ on('chat:message', function(msg) {
         }
 
         //Targeted stat
-        if ( (PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA)) ){
+        if ( ((PhysWepTypes.includes(WTypeA))||(PhysWeps.includes(WNameA))) && (!MagWeps.includes(WNameA)) ){
             DmgtypeA = "Physical";
             DmgA = (StrA + MtA) - DefB;
         } else if ( (MWepTypes.includes(WTypeA))||(MagWeps.includes(WNameA)) ){
@@ -327,7 +327,7 @@ on('chat:message', function(msg) {
 
         log(DmgtypeA);
         log(DmgA);
-        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+        if ( ((PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB))) && (!MagWeps.includes(WNameB)) ){
             DmgtypeB = "Physical";
             DmgB = (StrB + MtB) - DefA;
         } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){

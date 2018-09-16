@@ -452,7 +452,7 @@ on('chat:message', function(msg) {
 
         log(DmgtypeA);
         log(DmgA);
-        if ( (PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB)) ){
+        if ( ((PhysWepTypes.includes(WTypeB))||(PhysWeps.includes(WNameB))) && (!MagWeps.includes(WNameB)) ){
             DmgtypeB = "Physical";
             DmgB = (StrB + MtB) - DefA;
         } else if ( (MWepTypes.includes(WTypeB))||(MagWeps.includes(WNameB)) ){
