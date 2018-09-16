@@ -63,10 +63,10 @@ on('chat:message', function(msg) {
             current: Number(Avomod.get("current")) + avo
         });
         Ddgmod.setWithWorker({
-            current: Number(Hitmod.get("current")) + ddg
+            current: Number(Ddgmod.get("current")) + ddg
         });
         Dmgmod.setWithWorker({
-            current: Number(Hitmod.get("current")) + dmg
+            current: Number(Dmgmod.get("current")) + dmg
         });
 
         //queue queue queue
