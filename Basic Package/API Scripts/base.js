@@ -1466,6 +1466,10 @@ on('chat:message', function(msg) {
             log("Defender is dead!");
             BIsDead = true;
         }
+        if((typeof(UsesA) == "object") && (UsesA.get("current") == 0)){
+            Chatstr += '<p style = "margin-bottom: 0px;">' + AName +"'s weapon broke!</p>";
+            CanAttackA = false;
+        }
 
         if (CanAttackB == true){
             //Check if defender's attack hits
@@ -1560,6 +1564,10 @@ on('chat:message', function(msg) {
             CanAttackA = false;
             log("Attacker is dead!");
             AIsDead = true;
+        }
+        if((typeof(UsesB) == "object") && (UsesB.get("current") == 0)){
+            Chatstr += '<p style = "margin-bottom: 0px;">' + DName +"'s weapon broke!</p>";
+            CanAttackB = false;
         }
 
         //Attacker doubles; I don't think I should need to do usability checking for doubleattacking since it's checked within the battle calc
@@ -1812,6 +1820,11 @@ on('chat:message', function(msg) {
 
         if (HPB <= 0){
             CanAttackB = false;
+            BIsDead = true;
+        }
+        if((typeof(UsesA) == "object") && (UsesA.get("current") == 0)){
+            Chatstr += '<p style = "margin-bottom: 0px;">' + AName +"'s weapon broke!</p>";
+            CanAttackA = false;
         }
 
         //Defender doubles
@@ -2469,7 +2482,6 @@ on("change:campaign:turnorder", function(turn) {
                             log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
                             log("Pushed to queue!")
                         }
-                        log(queue[i][4])
                         //check queue for repeated buff/debuffs
                         for (var i in queue){
                             if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
