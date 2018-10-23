@@ -51,11 +51,16 @@ on('chat:message', function(msg) {
             sendChat('SYSTEM', 'Both tokens must be linked to characters in the journal!');
             return;
         }
+        let WPSkillA = attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false) || "";
         //grab all commands
         let SkillsA = findObjs({ characterid: attacker.id, type: "ability"});
         for (var i in SkillsA){
             SkillsA[i] = SkillsA[i].get("action");
             SkillsA[i] = JSON.parse(SkillsA[i]);
+        }
+        if (WPSkillA != ""){
+            WPSkillA = JSON.parse(WPSkillA)
+            SkillsA.push(WPSkillA)
         }
         let temp = []
         SkillsA.forEach(function(entry, i) {
@@ -63,6 +68,7 @@ on('chat:message', function(msg) {
                 temp.push(SkillsA[i])
             }
         });
+
         SkillsA = temp;
         let namestr = "";
         for (i in SkillsA){
@@ -98,16 +104,23 @@ on('chat:message', function(msg) {
         } else {
             who = 'character|' + who.id;
         }
-
+        let WPSkillA = JSON.parse(attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false)) || "";
+        log(WPSkillA)
         let newSkill = findObjs({ characterid: attacker.id, type: "ability", name: skillName })[0];
         log(newSkill)
-        if (newSkill == [] || newSkill == undefined){
+        let selectedSkill;
+        if ((newSkill == [] || newSkill == undefined) && skillName != WPSkillA.name){
             sendChat("SYSTEM","Provided skill name does not exist! ")
             return;
         }
-        newSkill = newSkill.get("action")
-        let selectedSkill = JSON.parse(newSkill);
-        log(selectedSkill)
+        if (skillName = WPSkillA.name){
+            selectedSkill = WPSkillA;
+        } else {
+            newSkill = newSkill.get("action")
+            selectedSkill = JSON.parse(newSkill);
+            log(selectedSkill)
+        }
+
         //Skills system time!!
         let user;
         let RNGSklU;
@@ -389,7 +402,7 @@ on('chat:message', function(msg) {
                     for (var q in StattargetE){
                         if (StattargetmodE[q] > 0){
                             queue.push([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
-                            log([StattargetE[q], "decrement", STCounterE[q], 0])
+                            log([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
                             log("Pushed to queue!")
                         } else {
                             queue.push([StattargetE[q], "increment", STCounterE[q], 0, "combat"])

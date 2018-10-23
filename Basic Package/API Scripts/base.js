@@ -221,6 +221,10 @@ on('chat:message', function(msg) {
         let WRankB = attrLookup(defender, "repeating_weapons_$0_WRank", false) || "E";
         let fIDA = getAttrByName(attacker.id, 'fid')|| "";
         let fIDB = getAttrByName(defender.id, 'fid')|| "";
+        let WPSkillA = attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false) || "";
+        let WPSkillB = attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false) || "";
+        log("Weapon Skill is")
+        log(WPSkillA)
         log(fIDA);
         log(fIDB);
         let UsesA;
@@ -588,6 +592,11 @@ on('chat:message', function(msg) {
             }
         }
         log(SkillsA);
+        //append first weapon skill
+        if (WPSkillA != ""){
+            WPSkillA = JSON.parse(WPSkillA)
+            SkillsA.push(WPSkillA)
+        }
 
         for (var i in SkillsB){
             SkillsB[i] = SkillsB[i].get("action");
@@ -596,6 +605,11 @@ on('chat:message', function(msg) {
             }
         }
         log(SkillsB);
+        //append first weapon skill
+        if (WPSkillB != ""){
+            WPSkillB = JSON.parse(WPSkillB)
+            SkillsB.push(WPSkillB)
+        }
         //Skills system! :^)
         //stat initializations- technically, these do nothing in the main function because ~block scope~
         let user;
