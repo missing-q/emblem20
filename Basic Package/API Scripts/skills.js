@@ -104,7 +104,11 @@ on('chat:message', function(msg) {
         } else {
             who = 'character|' + who.id;
         }
-        let WPSkillA = JSON.parse(attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false)) || "";
+        let WPSkillA = attrLookup(attacker, "repeating_weapons_$0_Skill_wp", false) || "";
+        log(WPSkillA)
+        if (WPSkillA != ""){
+            WPSkillA = JSON.parse(WPSkillA)
+        }
         log(WPSkillA)
         let newSkill = findObjs({ characterid: attacker.id, type: "ability", name: skillName })[0];
         log(newSkill)
@@ -584,14 +588,13 @@ on('chat:message', function(msg) {
                           //:OOOOOO
                         }
                     }
-                    CurrHPA.setWithWorker({
-                        current: HPA
-                    });
-                    CurrHPB.setWithWorker({
-                        current: HPB
-                    });
                 }
-
+                CurrHPA.setWithWorker({
+                    current: HPA
+                });
+                CurrHPB.setWithWorker({
+                    current: HPB
+                });
                 //recursionnn
                 if (obj.children_skills != []) {
                     for (var y in obj.children_skills) {
