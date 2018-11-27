@@ -86,14 +86,15 @@ on('chat:message', function(msg) {
         let HitA = getAttrByName(staffer.id, 'hit');
         let AvoB = getAttrByName(target.id, 'avo');
         let MagA = getAttrByName(staffer.id, 'mag_total');
-        let WNameA = getAttrByName(staffer.id, 'repeating_weapons_$0_WName') || "Empty";
-        let WTypeA = getAttrByName(staffer.id, 'repeating_weapons_$0_WType') || "Stones/Other";
-        let MtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Mt')) || 0;
-        let WtA = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Wt')) || 0;
-        let Range1A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range1')) || 1;
-        let Range2A = parseInt(getAttrByName(staffer.id, 'repeating_weapons_$0_Range2')) || 1;
+        let WNameA = attrLookup(staffer, "repeating_weapons_$0_WName", false) || "Empty";
+        let WTypeA = attrLookup(staffer, "repeating_weapons_$0_WType", false) || "Stones/Other";
+        let MtA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Mt", false)) || 0;
+        let WtA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Wt", false)) || 0;
+        let Range1A = parseInt(attrLookup(staffer, "repeating_weapons_$0_Range1", false)) || 1;
+        let Range2A = parseInt(attrLookup(staffer, "repeating_weapons_$0_Range2", false)) || 1;
         let fIDA = getAttrByName(staffer.id, 'fid')|| "";
-        let UsesA = findObjs({ characterid: staffer.id, name: "repeating_weapons_"+fIDA+"_Uses"},{ caseInsensitive: true })[0]; //assumes it exists, since that's a requirement for the thing to activate
+        let UsesA = parseInt(attrLookup(staffer, "repeating_weapons_$0_Uses", false)) || 0;
+        let UsesAStr = attrNameLookup(staffer, "repeating_weapons_$0_Uses", false);
         let diff = ManhDist(selectedToken, targetToken);
         let AllegianceA = getAttrByName(staffer.id, 'all');
         let AllegianceB = getAttrByName(target.id, 'all');
@@ -403,45 +404,112 @@ on('chat:message', function(msg) {
                 let HealmodE = parseInt(eval(obj.e_healfactor));
                 log("HealmodU is" + HealmodU);
 
-                let statnames = ["HP", "Str", "Mag", "Skl", "Spd", "Lck", "Def", "Res"];
                 log(obj.u_stat_target);
                 log(obj.e_stat_target);
-                //determining the actual stat target
-                if (obj.u_stat_target || obj.e_stat_target != "none") {
-                    for (var r in statnames) {
-                        if (obj.u_stat_target == statnames[r] + "U") {
-                            StattargetU = eval(statnames[r] + "U");
-                        }
-                        if (obj.e_stat_target == statnames[r] + "E") {
-                            StattargetE = eval(statnames[r] + "E");
-                        }
-                    }
+                //determining the actual stat targets- both of them should be arrays
+
+                if (obj.u_stat_target != "none") {
+                    StattargetU = eval(obj.u_stat_target);
                 }
-                //for current HP-affecting skills
-                if (obj.u_stat_target === "CurrHPU" || obj.u_stat_target === "CurrHPE"){
-                    StattargetU = eval(obj.u_stat_target)
-                }
-                if (obj.e_stat_target === "CurrHPU" || obj.e_stat_target === "CurrHPE"){
+                log(StattargetU)
+                if (obj.e_stat_target != "none") {
                     StattargetE = eval(obj.e_stat_target);
                 }
 
-                let StattargetmodU = parseInt(eval(obj.u_stat_targetmod));
-                let StattargetmodE = parseInt(eval(obj.e_stat_targetmod));
+                let StattargetmodU = eval(obj.u_stat_targetmod); //should also be arrays
+                let StattargetmodE = eval(obj.e_stat_targetmod);
+                let STCounterU = eval(obj.u_stat_targetcounter);
+                let STCounterE = eval(obj.e_stat_targetcounter);
                 log(StattargetE);
                 log(StattargetmodE);
+                let currvlU = [];
+                let newvlU = [];
+                let currvlE = [];
+                let newvlE = [];
 
                 if (obj.u_stat_target != "none" && StattargetU != undefined){
-                    StattargetU.setWithWorker({
-                        current: parseInt(StattargetU.get("current") + Number(StattargetmodU))
-                    });
-                    log("Set U-targeted stat to "+ StattargetU.get("current"));
+                    for (var i in StattargetmodU){
+                        log(StattargetU);
+                        log(StattargetU[i])
+                        log(StattargetmodU[i])
+                        currvlU[i] = parseInt(StattargetU[i].get("current"));
+                        newvlU[i] = parseInt(StattargetmodU[i])
+                        log(currvlU[i]);
+                        log(newvlU[i])
+                        StattargetU[i].setWithWorker({
+                            current: currvlU[i] + newvlU[i]
+                        });
+                        log("Set U-targeted stat to "+ StattargetU[i].get("current"));
+                    }
                 }
 
                 if (obj.e_stat_target != "none" && StattargetE != undefined){
-                    StattargetE.setWithWorker({
-                        current: parseInt(StattargetE.get("current") + Number(StattargetmodE))
-                    });
-                    log("Set E-targeted stat to "+ StattargetE.get("current"));
+                    for (var i in StattargetmodE){
+                        log(StattargetE);
+                        log(StattargetE[i])
+                        log(StattargetmodE[i])
+                        currvlE[i] = parseInt(StattargetE[i].get("current"));
+                        newvlE[i] = parseInt(StattargetmodE[i])
+                        log(currvlE[i]);
+                        log(newvlE[i])
+                        StattargetE[i].setWithWorker({
+                            current: currvlE[i] + newvlE[i]
+                        });
+                        log("Set E-targeted stat to "+ StattargetE[i].get("current"));
+                    }
+                }
+                //queue queue queue
+                if (obj.u_stat_target != "CurrHPU" && obj.u_stat_target != "CurrHPE" && obj.u_stat_target != "none"){
+                    for (var q in StattargetU){
+                        if (StattargetmodU[q] > 0){
+                            queue.push([StattargetU[q], "decrement", STCounterU[q], 0, "combat"])
+                            log([StattargetU[q], "decrement", STCounterU[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetU[q], "increment", STCounterU[q], 0, "combat"])
+                            log([StattargetU[q], "increment", STCounterU[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetU[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetU[q].setWithWorker({
+                                    current: currvlU[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
+                }
+
+                if (obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "CurrHPE" && obj.e_stat_target != "none"){
+                    for (var q in StattargetE){
+                        if (StattargetmodE[q] > 0){
+                            queue.push([StattargetE[q], "decrement", STCounterE[q], 0, "combat"])
+                            log([StattargetE[q], "decrement", STCounterE[q], 0])
+                            log("Pushed to queue!")
+                        } else {
+                            queue.push([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
+                            log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
+                            log("Pushed to queue!")
+                        }
+                        log(queue[i][4])
+                        //check queue for repeated buff/debuffs
+                        for (var i in queue){
+                            if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
+                                queue.shift();
+                                i--;
+                                StattargetE[q].setWithWorker({
+                                    current: currvlE[q]
+                                }); //reset stat back to what it was before
+                                log("Removed repeating b/d");
+                            }
+                        }
+                    //
+                    }
                 }
 
                 HPA = parseInt(HPA) + HealmodU; //this has to be here because sometimes it'll be stupid and overflow if it's not >:(
@@ -463,6 +531,10 @@ on('chat:message', function(msg) {
                         let HPcurrC = findObjs({
                             characterid: char,
                             name: "HP_current"
+                        })[0];
+                        let HPC = findObjs({
+                            characterid: char,
+                            name: "HP_bd"
                         })[0];
                         let StrC = findObjs({
                             characterid: char,
@@ -491,6 +563,10 @@ on('chat:message', function(msg) {
                         let ResC = findObjs({
                             characterid: char,
                             name: "Res_bd"
+                        })[0];
+                        let MovC = findObjs({
+                            characterid: char,
+                            name: "Mov_bd"
                         })[0];
                         let HitC = findObjs({
                             characterid: char,
@@ -525,11 +601,14 @@ on('chat:message', function(msg) {
 
                         let effect = eval(obj.radius_effect); //effect MUST be an array!!!
                         let target = eval(obj.radius_target); //likewise
+                        let counter = eval(obj.radius_counter);
                         let rad_effect;
+                        let def_target;
 
                         for (var i in effect) {
                           log(target[i].get("current"))
                           rad_effect = Number(target[i].get("current")) + parseInt(Number(effect[i]));
+                          def_target = Number(target[i].get("current"));
                           target[i].setWithWorker({
                               current: rad_effect
                           });
@@ -542,11 +621,40 @@ on('chat:message', function(msg) {
                           if ((target[i] == HPcurrC) && (char == defender.id)) {
                               HPB += parseInt(effect[1])
                           }
+
+                          //queueeeee
+                          if (target[i] != HPcurrC) {
+                            if (parseInt(effect[i]) > 0){
+                                queue.push([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log([target[i], "decrement", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            } else {
+                                queue.push([target[i], "increment", counter[i], 0, "combat-r"])
+                                log([target[i], "increment", counter[i], 0, "combat-r"])
+                                log("Pushed to queue!")
+                            }
+
+                            //check queue for repeated buff/debuffs
+                            for (var j in queue){
+                                if ((queue[j][0] == target[i]) && (queue[j][4] == "command-r") && (j != queue.length - 1)){ //the last element should be immune since it just got pushed
+                                    log(j)
+                                    log(queue.length - 1)
+                                    log(queue)
+                                    target[i].setWithWorker({
+                                        current: def_target
+                                    }); //reset stat back to what it was before*/
+                                    log("Removed repeating b/d");
+                                }
+                            }
+
+                            //
+                          }
+                          //:OOOOOO
                         }
                     }
                 }
 
-                CurrHPA.setWithWorker({
+                CurrHPU.setWithWorker({
                     current: HPA
                 });
 
@@ -616,11 +724,11 @@ on('chat:message', function(msg) {
                                 StaffEXPA = j.exp;
                                 dispHealA = HPVal;
                                 for (var z in SkillsA){
-                                    Skill(staffer, target, SkillsA[z], "staff");
+                                    Skill(staffer.id, target.id, SkillsA[z], "staff");
                                 }
                                 CurrHPB.setWithWorker({current: parseInt(CurrHPB.get("current")) + HPVal});
                                 chatstr += '<p style = "margin-bottom: 0px;">' + targetToken.get("name") + " is healed for " + String(HPVal) + " HP!</p>";
-                                UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1});
+                                setAttrs(staffer.id, {[UsesAStr]: UsesA - 1})
                                 dispHitA = "--";
                             }
                             else {
@@ -639,7 +747,7 @@ on('chat:message', function(msg) {
                                     }
                                     log(j.status);
                                     targetToken.set(j.status);
-                                    UsesA.setWithWorker({current: parseInt(UsesA.get("current")) - 1});
+                                    setAttrs(staffer.id, {[UsesAStr]: UsesA - 1})
                                     chatstr += '<p style = "margin-bottom: 0px;">'+ j.chatmsg + '</p>';
                                     StaffEXPA = j.exp;
                                 }
@@ -701,7 +809,7 @@ on('chat:message', function(msg) {
         //EXP!
         CurrEXP.set("current",EXPA);
         log(EXPA);
-        if (CurrEXP.get("current") >= 100){
+        while (CurrEXP.get("current") >= 100){
             CurrEXP.set("current",CurrEXP.get("current")-100);
             //Get growths
             LvA.set("current", parseInt(LvA.get("current")) + 1);
@@ -737,7 +845,7 @@ on('chat:message', function(msg) {
             let statslist = [HPSG,StrSG,MagSG,SklSG,SpdSG,LckSG,DefSG,ResSG];
             log(statslist);
             let slist = ["HP","Str","Mag","Skl","Spd","Lck","Def","Res"];
-            for (var i = 0; i < growthslist.length - 1; i++){
+            for (var i = 0; i < growthslist.length; i++){
                 gi = growthslist[i];
                 log(gi);
                 if (randomInteger(100) < gi){
