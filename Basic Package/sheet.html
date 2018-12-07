@@ -970,7 +970,7 @@ const Cavalier = {
   "HP_b": 17,
   "Str_b": 6,
   "Mag_b": 0,
-  "Skl_b": 0,
+  "Skl_b": 5,
   "Spd_b": 5,
   "Lck_b": 3,
   "Def_b": 3,
@@ -4102,7 +4102,7 @@ on("change:Skl_total change:Critmod change:repeating_weapons:Crit change:_repord
    });
 });
 //Avo
-on("change:Spd_total change:Lck_total", function() {
+on("change:Spd_total change:Lck_total change:Avomod", function() {
    getAttrs(["Spd_total", "Lck_total","Avomod"], function(v) {
        Spd = v.Spd_total;
        LckA = v.Lck_total;

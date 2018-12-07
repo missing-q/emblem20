@@ -570,7 +570,7 @@ on("change:graphic:top", function(token){
         log(tokenInRadius);
         let user = getObj('character', token.get('represents'));
         log(user)
-        
+
         //filter skills
         Skills = findObjs({ characterid: user.id, type: "ability"});
         let temp = [];
