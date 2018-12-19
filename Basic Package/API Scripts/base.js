@@ -957,7 +957,6 @@ on('chat:message', function(msg) {
                             log([StattargetE[q], "increment", STCounterE[q], 0, "combat"])
                             log("Pushed to queue!")
                         }
-                        log(queue[i][4])
                         //check queue for repeated buff/debuffs
                         for (var i in queue){
                             if ((queue[i][0] == StattargetE[q]) && (queue[i][4] == "combat") && (queue[i] != queue[queue.length - 1])){ //the last element should be immune since it just got pushed
