@@ -414,7 +414,7 @@ on("change:graphic:top", function(token){
                         })[0];
 
                         //numerical stats
-                        let HPcurrStat = getAttrByName(char, 'HP_current');
+                        let HPcurrStat = getAttrByName(char, 'HP_total');
                         let StrStat = getAttrByName(char, 'Str_total');
                         let MagStat = getAttrByName(char, 'Mag_total');
                         let SklStat = getAttrByName(char, 'Skl_total');
@@ -1079,7 +1079,7 @@ on("change:graphic:left", function(token){
                         })[0];
 
                         //numerical stats
-                        let HPcurrStat = getAttrByName(char, 'HP_current');
+                        let HPcurrStat = getAttrByName(char, 'HP_total');
                         let StrStat = getAttrByName(char, 'Str_total');
                         let MagStat = getAttrByName(char, 'Mag_total');
                         let SklStat = getAttrByName(char, 'Skl_total');
