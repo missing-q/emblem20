@@ -86,6 +86,45 @@ var attrNameLookup = function(character,name,caseSensitive){
     return name;
 };
 
+//version that returns straight objs
+var attrObjLookup = function(character,name,caseSensitive){
+    let match=name.match(/^(repeating_.*)_\$(\d+)_.*$/);
+    let returnval;
+    if(match){
+        let index=match[2],
+            attrMatcher=new RegExp(`^${name.replace(/_\$\d+_/,'_([-\\da-zA-Z]+)_')}$`,(caseSensitive?'i':'')),
+            createOrderKeys=[],
+            attrs=_.chain(findObjs({type:'attribute', characterid:character.id}))
+                .map((a)=>{
+                    return {attr:a,match:a.get('name').match(attrMatcher)};
+                })
+                .filter((o)=>o.match)
+                .each((o)=>createOrderKeys.push(o.match[1]))
+                .reduce((m,o)=>{ m[o.match[1]]=o.attr; return m;},{})
+                .value(),
+            sortOrderKeys = _.chain( ((findObjs({
+                type:'attribute',
+                    characterid:character.id,
+                    name: `_reporder_${match[1]}`
+                })[0]||{get:_.noop}).get('current') || '' ).split(/\s*,\s*/))
+                .intersection(createOrderKeys)
+                .union(createOrderKeys)
+                .value();
+        if(index<sortOrderKeys.length && _.has(attrs,sortOrderKeys[index])){
+            returnval = attrs[sortOrderKeys[index]];
+            if (returnval != undefined){
+                return returnval;
+            }
+            else {
+                return ""
+            }
+        }
+    }
+
+    return name;
+};
+
+
 //credit to Brian on the forums for this framework!
 var queue = [];
 function ManhDist(token1,token2) { //Manhattan Distance in tiles between two units
@@ -208,6 +247,11 @@ on('chat:message', function(msg) {
         let WNameA = attrLookup(attacker,"repeating_weapons_$0_WName",false) || "Empty";
         let WNameB = attrLookup(defender, "repeating_weapons_$0_WName", false) || "Empty";
         let WTypeA = attrLookup(attacker, "repeating_weapons_$0_WType", false) || "Stones/Other";
+
+        log("-----")
+        log(WTypeA);
+        log(attrObjLookup(attacker, "repeating_weapons_$0_WType", false));
+
         let WTypeB = attrLookup(defender, "repeating_weapons_$0_WType", false) || "Stones/Other";
         let MtA = parseInt(attrLookup(attacker, "repeating_weapons_$0_Mt", false)) || 0;
         let MtB = parseInt(attrLookup(defender, "repeating_weapons_$0_Mt", false)) || 0;
@@ -2387,9 +2431,11 @@ on("change:campaign:turnorder", function(turn) {
                 rng = RNGLckU;
             }
             if ((obj.customcond != "none") && (eval(obj.customcond) != true)) {
+                log("customcond failed")
                 return;
             }
             if ((obj.turncond != "none") && (eval(obj.turncond) != true)) {
+                log("turncond failed")
                 return;
             }
             log(obj.rng);
