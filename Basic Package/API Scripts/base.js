@@ -371,7 +371,7 @@ on('chat:message', function(msg) {
 
         const WepRanksA = [SwordEXPA,LanceEXPA,AxeEXPA,BowEXPA,DaggerEXPA,GunEXPA,AnimaEXPA,LightEXPA,DarkEXPA,StoneEXPA,StaffEXPA];
         const WepRanksB = [SwordEXPB,LanceEXPB,AxeEXPB,BowEXPB,DaggerEXPB,GunEXPB,AnimaEXPB,LightEXPB,DarkEXPB,StoneEXPB,StaffEXPB];
-        const WRStr = ["SwordEXP", "LanceEXP", "AxeEXP", "BowEXP", "DaggerEXP", "GunEXP", "DarkEXP", "LightEXP", "AnimaEXP", "StoneEXP", "StaffEXP"] //for setattrs
+        const WRStr = ["SwordEXP", "LanceEXP", "AxeEXP", "BowEXP", "DaggerEXP", "GunEXP", "AnimaEXP", "LightEXP", "DarkEXP", "StoneEXP", "StaffEXP"] //for setattrs
 
         const WepUA = [SwordUA,LanceUA,AxeUA,BowUA,DaggerUA,GunUA,AnimaUA,LightUA,DarkUA,StoneUA,StaffUA];
         const WepUB = [SwordUB,LanceUB,AxeUB,BowUB,DaggerUB,GunUB,AnimaUB,LightUB,DarkUB,StoneUB,StaffUB];
