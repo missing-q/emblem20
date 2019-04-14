@@ -1,39 +1,14 @@
 {
-  "name": "dnd5e",
-  "title": "Dungeons & Dragons 5th Edition",
-  "description": "A comprehensive game system for running games of Dungeons & Dragons 5th Edition in the Foundry VTT environment.",
-  "version": 0.4,
+  "name": "simple",
+  "title": "Minimal World Building",
+  "description": "A minimalist game system with very simple Actor and Item models to support free-form system agnostic gameplay.",
+  "version": 0.2,
   "author": "Atropos",
-  "scripts": ["dnd5e.js"],
-  "styles": ["./css/dnd5e.css"],
-  "packs": [
-    {
-      "name": "monsters",
-      "label": "Monsters (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/monsters.db",
-      "entity": "Actor"
-    },
-    {
-      "name": "items",
-      "label": "Items (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/items.db",
-      "entity": "Item"
-    },
-    {
-      "name": "spells",
-      "label": "Spells (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/spells.db",
-      "entity": "Item"
-    }
-  ],
+  "scripts": ["scripts/simple.js"],
+  "styles": ["styles/simple.css"],
+  "packs": [],
   "languages": ["en"],
-  "initiative": "1d20 + @abilities.dex.mod + @attributes.init.value + (@abilities.dex.value / 100)",
-  "gridDistance": 5,
-  "gridUnits": "ft"
+  "initiative": "1d20",
+  "gridDistance": 1,
+  "gridUnits": ""
 }
