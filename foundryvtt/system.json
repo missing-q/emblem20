@@ -1,37 +1,12 @@
 {
   "name": "emblem20",
-  "title": "Fire Emblem",
-  "description": "A comprehensive game system for running games of Dungeons & Dragons 5th Edition in the Foundry VTT environment.",
-  "version": 0.4,
+  "title": "Fire Emblem Tabletop",
+  "description": "who",
+  "version": 0.6,
   "author": "Atropos",
   "scripts": ["emblem20.js"],
   "styles": ["./css/emblem20.css"],
-  "packs": [
-    {
-      "name": "monsters",
-      "label": "Monsters (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/monsters.db",
-      "entity": "Actor"
-    },
-    {
-      "name": "items",
-      "label": "Items (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/items.db",
-      "entity": "Item"
-    },
-    {
-      "name": "spells",
-      "label": "Spells (SRD)",
-      "system": "dnd5e",
-      "module": "dnd5e",
-      "path": "./packs/spells.db",
-      "entity": "Item"
-    }
-  ],
+  "packs": [],
   "languages": ["en"],
   "initiative": "1d20 + @abilities.dex.mod + @attributes.init.value + (@abilities.dex.value / 100)",
   "gridDistance": 5,

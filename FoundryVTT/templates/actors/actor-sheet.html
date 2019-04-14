@@ -29,8 +29,21 @@
         <!-- DETAILS -->
         <ul class="details">
             <li class="character-detail">
-                <input name="data.details.race.value" type="text" value="{{data.details.race.value}}" placeholder="Race"/>
+                <select name="data.details.race.value" type="text" value="{{data.details.race.value}}" placeholder="Race">
+                  <option value = "Human"></option>
+                  <option value = "Laguz"></option>
+                  <option value = "Half-Laguz"></option>
+                  <option value = "Bird Laguz"></option>
+                  <option value = "Half-Bird"></option>
+                  <option value = "Kitsune"></option>
+                  <option value = "Half-Kitsune"></option>
+                  <option value = "Wolfskin"></option>
+                  <option value = "Half-Wolfskin"></option>
+                  <option value = "Monster"></option>
+                  <option value = "Other"></option>
+                </select>
             </li>
+            <span>chungy</span>
             <li class="character-detail">
                 <input name="data.details.background.value" type="text" value="{{data.details.background.value}}" placeholder="Background"/>
             </li>
@@ -129,7 +142,7 @@
                            {{checked data.resources.primary.lr}}/>
                 </footer>
             </div>
-            
+
             <div class="attribute">
                 <h4 class="attribute-name">
                     <input name="data.resources.secondary.label" type="text" class="resource-label"
@@ -489,19 +502,19 @@
                 <input type="text" name="data.traits.di.value" data-dtype="{{data.traits.di.type}}"
                        value="{{data.traits.di.value}}" placeholder="None"/>
             </div>
-            
+
             <div class="form-group-stacked">
                 <label>{{data.traits.dr.label}}</label>
                 <input type="text" name="data.traits.dr.value" data-dtype="{{data.traits.dr.type}}"
                        value="{{data.traits.dr.value}}" placeholder="None"/>
             </div>
-            
+
             <div class="form-group-stacked">
                 <label>{{data.traits.dv.label}}</label>
                 <input type="text" name="data.traits.dv.value" data-dtype="{{data.traits.dv.type}}"
                        value="{{data.traits.dv.value}}" placeholder="None"/>
             </div>
-            
+
             <div class="form-group-stacked">
                 <label>{{data.traits.ci.label}}</label>
                 <input type="text" name="data.traits.ci.value" data-dtype="{{data.traits.ci.type}}"
