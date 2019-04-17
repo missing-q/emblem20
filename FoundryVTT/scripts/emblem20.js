@@ -72,6 +72,65 @@ class SimpleActorSheet extends ActorSheet {
 
 CONFIG.Actor.sheetClass = SimpleActorSheet;
 
+/**
+ * Extend the base Actor class to implement additional logic specialized for D&D5e.
+ */
+class ActorEmblem20 extends Actor {
+
+  /**
+   * Augment the basic actor data with additional dynamic data.
+   */
+  prepareData(actorData) {
+    actorData = super.prepareData(actorData);
+    const data = actorData.data;
+
+    // Prepare Character data
+    this._prepareCharacterData(data);
+
+		/*
+    // Ability modifiers and saves
+    for (let abl of Object.values(data.abilities)) {
+      abl.mod = Math.floor((abl.value - 10) / 2);
+      abl.save = abl.mod + ((abl.proficient || 0) * data.attributes.prof.value);
+    }
+
+    // Skill modifiers
+    for (let skl of Object.values(data.skills)) {
+      skl.value = parseFloat(skl.value || 0);
+      skl.mod = data.abilities[skl.ability].mod + Math.floor(skl.value * data.attributes.prof.value);
+    }
+
+    // Attributes
+    data.attributes.init.mod = data.abilities.dex.mod + (data.attributes.init.value || 0);
+    data.attributes.ac.min = 10 + data.abilities.dex.mod;
+
+    // Spell DC
+    let spellAbl = data.attributes.spellcasting.value || "int";
+    data.attributes.spelldc.value = 8 + data.attributes.prof.value + data.abilities[spellAbl].mod;
+
+    // Return the prepared Actor data
+    return actorData;
+		*/
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Prepare Character type specific data
+   */
+  _prepareCharacterData(data) {
+
+    // Level, experience, and proficiency
+		/*
+    data.details.level.value = parseInt(data.details.level.value);
+    data.details.xp.max = this.getLevelExp(data.details.level.value || 1);
+    let prior = this.getLevelExp(data.details.level.value - 1 || 0),
+          req = data.details.xp.max - prior;
+    data.details.xp.pct = Math.min(Math.round((data.details.xp.value -prior) * 100 / req), 99.5);
+    data.attributes.prof.value = Math.floor((data.details.level.value + 7) / 4);
+		*/
+  }
+
 
 /* -------------------------------------------- */
 
