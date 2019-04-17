@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with some very simple modifications
  */
-class SimpleActorSheet extends ActorSheet {
+class EmblemActorSheet extends ActorSheet {
 
   /**
    * Extend and override the default options used by the 5e Actor Sheet
@@ -70,7 +70,7 @@ class SimpleActorSheet extends ActorSheet {
   }
 }
 
-CONFIG.Actor.sheetClass = SimpleActorSheet;
+CONFIG.Actor.sheetClass = EmblemActorSheet;
 
 /**
  * Extend the base Actor class to implement additional logic specialized for D&D5e.
@@ -80,7 +80,7 @@ class ActorEmblem20 extends Actor {
   /**
    * Augment the basic actor data with additional dynamic data.
    */
-  prepareData(actorData) {
+	 prepareData(actorData) {
     actorData = super.prepareData(actorData);
     const data = actorData.data;
 
