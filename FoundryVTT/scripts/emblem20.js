@@ -134,8 +134,7 @@ class ActorEmblem20 extends Actor {
     data.attributes.prof.value = Math.floor((data.details.level.value + 7) / 4);
 		*/
   }
-
-
+}
   /* -------------------------------------------- */
 
 

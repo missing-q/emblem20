@@ -370,11 +370,289 @@
   }
 },
 "item": {
-  "data": {
-    "description": {
-      "type": "String",
-      "label": "Description"
-    }
-  }
-}
+   "data": {
+     "description": {
+       "type": "String",
+       "label": "Description"
+     },
+     "source": {
+       "type": "String",
+       "label": "Source"
+     }
+   },
+   "weapon": {
+     "mt": {
+       "type": "Number",
+       "label": "Might"
+     },
+     "hit": {
+       "type": "Number",
+       "label": "Hit"
+     },
+     "crit": {
+       "type": "Number",
+       "label": "Crit"
+     },
+     "r1": {
+       "type": "Number",
+       "label": "Lower range",
+       "min" : 1
+     },
+     "r2": {
+       "type": "Number",
+       "label": "Upper range",
+       "min" : 1
+     },
+     "weapontype": {
+       "type": "String",
+       "label": "Weapon Type"
+     },
+     "rank": {
+       "type": "String",
+       "label": "ranks"
+     },
+     "uses": {
+       "type": "Number",
+       "label": "Quantity",
+       "value": 1
+     }
+   },
+   "equipment": {
+     "quantity": {
+       "type": "Number",
+       "label": "Quantity",
+       "value": 1
+     },
+     "weight": {
+       "type": "Number",
+       "label": "Weight"
+     },
+     "price": {
+       "type": "String",
+       "label": "Price"
+     },
+     "armor": {
+       "type": "Number",
+       "label": "Armor Value"
+     },
+     "armorType": {
+       "type": "String",
+       "label": "Armor Type"
+     },
+     "strength": {
+       "type": "String",
+       "label": "Required Strength"
+     },
+     "stealth": {
+       "type": "Boolean",
+       "label": "Stealth Disadvantage"
+     },
+     "proficient": {
+       "type": "Boolean",
+       "label": "Proficient"
+     },
+     "attuned": {
+       "type": "Boolean",
+       "label": "Attuned"
+     },
+     "equipped": {
+       "type": "Boolean",
+       "label": "Equipped"
+     }
+   },
+   "consumable": {
+     "quantity": {
+       "type": "Number",
+       "label": "Quantity",
+       "value": 1
+     },
+     "weight": {
+       "type": "Number",
+       "label": "Weight"
+     },
+     "price": {
+       "type": "String",
+       "label": "Price"
+     },
+     "consumableType": {
+       "type": "String",
+       "label": "Consumable Type"
+     },
+     "charges": {
+       "type": "Number",
+       "label": "Charges"
+     },
+     "consume": {
+       "type": "String",
+       "label": "Roll on Consume"
+     },
+     "autoUse": {
+       "type": "Boolean",
+       "label": "Consume on Use"
+     },
+     "autoDestroy": {
+       "type": "Boolean",
+       "label": "Destroy on Empty"
+     }
+   },
+   "tool": {
+     "quantity": {
+       "type": "Number",
+       "label": "Quantity",
+       "value": 1
+     },
+     "weight": {
+       "type": "Number",
+       "label": "Weight"
+     },
+     "price": {
+       "type": "String",
+       "label": "Price"
+     },
+     "ability": {
+       "type": "String",
+       "label": "Default Ability"
+     },
+     "proficient": {
+       "type": "Number",
+       "label": "Proficiency"
+     }
+   },
+   "backpack": {
+     "quantity": {
+       "type": "Number",
+       "label": "Quantity",
+       "value": 1
+     },
+     "weight": {
+       "type": "Number",
+       "label": "Weight"
+     },
+     "price": {
+       "type": "String",
+       "label": "Price"
+     }
+   },
+   "class": {
+     "levels": {
+       "type": "String",
+       "label": "Class Levels",
+       "value": 1
+     },
+     "subclass": {
+       "type": "String",
+       "label": "Subclass"
+     }
+   },
+   "spell": {
+     "spellType": {
+       "type": "String",
+       "label": "Spell Type"
+     },
+     "level": {
+       "type": "Number",
+       "label": "Spell Level"
+     },
+     "school": {
+       "type": "String",
+       "label": "Spell School"
+     },
+     "components": {
+       "type": "String",
+       "label": "Spell Components"
+     },
+     "materials": {
+       "type": "String",
+       "label": "Materials"
+     },
+     "target": {
+       "type": "String",
+       "label": "Target"
+     },
+     "range": {
+       "type": "String",
+       "label": "Range"
+     },
+     "time": {
+       "type": "String",
+       "label": "Casting Time"
+     },
+     "duration": {
+       "type": "String",
+       "label": "Duration"
+     },
+     "damage": {
+       "type": "String",
+       "label": "Spell Damage"
+     },
+     "damageType": {
+       "type": "String",
+       "label": "Damage Type"
+     },
+     "save": {
+       "type": "String",
+       "label": "Saving Throw"
+     },
+     "concentration": {
+       "type": "Boolean",
+       "label": "Requires Concentration"
+     },
+     "ritual": {
+       "type": "Boolean",
+       "label": "Cast as Ritual"
+     },
+     "ability": {
+       "type": "String",
+       "label": "Spellcasting Ability"
+     },
+     "prepared": {
+       "type": "String",
+       "label": "Prepared Spell"
+     }
+   },
+   "feat": {
+     "featType": {
+       "type": "String",
+       "label": "Feat Type"
+     },
+     "requirements": {
+       "type": "String",
+       "label": "Requirements"
+     },
+     "ability": {
+       "type": "String",
+       "label": "Ability Modifier"
+     },
+     "target": {
+       "type": "String",
+       "label": "Target"
+     },
+     "range": {
+       "type": "String",
+       "label": "Range"
+     },
+     "time": {
+       "type": "String",
+       "label": "Casting Time"
+     },
+     "duration": {
+       "type": "String",
+       "label": "Duration"
+     },
+     "damage": {
+       "type": "String",
+       "label": "Ability Damage"
+     },
+     "damageType": {
+       "type": "String",
+       "label": "Damage Type"
+     },
+     "save": {
+       "type": "String",
+       "label": "Saving Throw"
+     }
+   }
+ }
+
+
 }
